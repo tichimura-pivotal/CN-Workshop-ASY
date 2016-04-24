@@ -1,24 +1,28 @@
-= Building a Spring Boot Application
+:compat-mode:
+= Adding Persistence to Boot Application
 
-== Create a Spring Boot Project
+In this lab we'll utilize Spring Boot, Spring Data, and Spring Data REST to create a fully-functional hypermedia-driven RESTful web service. We'll then deploy it to Pivotal Cloud Foundry.
+
+NOTE: The completed code for this lab can be found at `$COURSE_HOME/day_01/session_03/lab_09/complete/cities`.
+
+== Create a Hypermedia-Driven RESTful Web Service with Spring Data REST (using JPA)
 
 . Browse to https://start.spring.io
 
-. Generate a Maven Project with Spring Boot 1.3 (if this version is unavailable then get the latest 1.3.X version, but no SNAPSHOTS).
+. Generate a Maven Project with Spring Boot 1.3.3 (if this version is unavailable then get the latest 1.3.X version, but no SNAPSHOTS).
 
 . Fill out the *Project metadata* fields as follows:
 +
 Group:: +io.pivotal+
 Artifact:: +data-jpa-spring-boot+
-Name:: data-spring-boot
 
 . In the dependencies section, add the following:
 +
-*Web*, *Thymeleaf*, *JPA*,*H2*
+*Rest Repositories* *JPA* *H2* *MySQL*
 
 . Click the _Generate Project_ button. Your browser will download a zip file. 
 
-. Copy then unpack the downloaded zip file to *CN-Workshop-TM/labs/lab02/data-jpa-spring-boot*
+. Copy then unpack the downloaded zip file to *CN-Workshop-TM/labs/lab02/*
 +
 Your directory structure should now look like:
 +
@@ -39,295 +43,344 @@ Select File > Import… Then select Maven > Existing Maven Projects. On the Impo
 This application will create a simple reading list by asking for books you have read and storing them in a simple relational repository. The first stereotype we will need is the domain model itself, which is Book.
 
 == Add the domain object - Book
-. Add a Book object to the io.pivotal package with the required JPA annotations.
+. Create the package org.example.cities.domain and in that package create the class City. Into that file you can paste the following source code, which represents cities based on postal codes, global coordinates, etc:
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
-package io.pivotal;
-
-package io.pivotal;
-
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-
 @Entity
-public class Book {
+@Table(name="city")
+public class City implements Serializable {
+    private static final long serialVersionUID = 1L;
 
-	@Id
-	@GeneratedValue(strategy=GenerationType.AUTO)
-	private Long id;
-	private String reader;
-	private String isbn;
-	private String title;
-	private String author;
-	private String description;
+    @Id
+    @GeneratedValue
+    private long id;
 
-	public Long getId() {
-		return id;
-	}
+    @Column(nullable = false)
+    private String name;
 
-	public void setId(Long id) {
-		this.id = id;
-	}
+    @Column(nullable = false)
+    private String county;
 
-	public String getReader() {
-		return reader;
-	}
+    @Column(nullable = false)
+    private String stateCode;
 
-	public void setReader(String reader) {
-		this.reader = reader;
-	}
+    @Column(nullable = false)
+    private String postalCode;
 
-	public String getIsbn() {
-		return isbn;
-	}
+    @Column
+    private String latitude;
 
-	public void setIsbn(String isbn) {
-		this.isbn = isbn;
-	}
+    @Column
+    private String longitude;
 
-	public String getTitle() {
-		return title;
-	}
+    public String getName() { return name; }
 
-	public void setTitle(String title) {
-		this.title = title;
-	}
+    public void setName(String name) { this.name = name; }
 
-	public String getAuthor() {
-		return author;
-	}
+    public String getPostalCode() { return postalCode; }
 
-	public void setAuthor(String author) {
-		this.author = author;
-	}
+    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
 
-	public String getDescription() {
-		return description;
-	}
+    public long getId() { return id; }
 
-	public void setDescription(String description) {
-		this.description = description;
-	}
+    public void setId(long id) { this.id = id; }
 
+    public String getStateCode() { return stateCode; }
+
+    public void setStateCode(String stateCode) { this.stateCode = stateCode; }
+
+    public String getCounty() { return county; }
+
+    public void setCounty(String county) { this.county = county; }
+
+    public String getLatitude() { return latitude; }
+
+    public void setLatitude(String latitude) { this.latitude = latitude; }
+
+    public String getLongitude() { return longitude; }
+
+    public void setLongitude(String longitude) { this.longitude = longitude; }
 }
 
-== Add an Repository in a separate Repository class that we'll name ReadingListRepository
-
-. We extend a JpaRepository with our domain type and key type as parameters in  class _io.pivotal.ReadingListRepository_ (/data-jpa-spring-boot/src/main/java/io/pivotal/ReadingListRepository.java).
+----
 +
-[source, java, numbered]
----------------------------------------------------------------------
- class _io.pivotal.ReadingListRepository_ (/data-jpa-spring-boot/src/main/java/io/pivotal/ReadingListRepository.java).
-+
-[source, java, numbered]
----------------------------------------------------------------------
+Notice that we're using JPA annotations on the class and its fields. You'll need to use your IDE's features to add the appropriate import statements.
 
-== Add an Endpoint in a separate Controller class that we'll name ReadingListController
-
-. Add an @RestController annotation to the class _io.pivotal.ReadingListController_ (/data-jpa-spring-boot/src/main/java/io/pivotal/ReadingListController.java).
-+
-[source, java, numbered]
----------------------------------------------------------------------
-package io.pivotal;
-
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-
-@Controller
-@RequestMapping("/readingList")
-public class ReadingListController {
-
-  private static final String reader = "craig";
-
-	private ReadingListRepository readingListRepository;
-
-	@Autowired
-	public ReadingListController(ReadingListRepository readingListRepository) {
-		this.readingListRepository = readingListRepository;
-	}
-
-	@RequestMapping(method=RequestMethod.GET)
-	public String readersBooks(Model model) {
-
-		List<Book> readingList = readingListRepository.findByReader(reader);
-		if (readingList != null) {
-			model.addAttribute("books", readingList);
-		}
-		return "readingList";
-	}
-
-
-}
-
-
----------------------------------------------------------------------
-
-. Add the following request handler to the class _io.pivotal.HelloSpringBootApplication_ (/hello-spring-boot/src/main/java/io/pivotal/HelloSpringBootApplication.java).
+. Create the package +io.pivotal.cities.repositories+ and in that package create the interface +CityRepository+. Paste the following code and add appropriate imports:
 +
 [source,java]
----------------------------------------------------------------------
-	@RequestMapping(method=RequestMethod.POST)
-	public String addToReadingList(Book book) {
-		book.setReader(reader);
-		readingListRepository.save(book);
-		return "redirect:/readingList";
-	}
-
----------------------------------------------------------------------
-. Add a web page so that we can see the book titles provided in an html thymeleaf page called _readingList.html_ (/hello-spring-boot/src/main/resources/templates/readingList.html).
-+
-[source,html]
-<html>
-  <head>
-    <title>Reading List</title>
-    <link rel="stylesheet" th:href="@{/style.css}"></link>
-  </head>
-
-  <body>
-    <h2>Your Reading List</h2>
-    <div th:unless="${#lists.isEmpty(books)}">
-      <dl th:each="book : ${books}">
-        <dt class="bookHeadline">
-          <span th:text="${book.title}">Title</span> by
-          <span th:text="${book.author}">Author</span>
-          (ISBN: <span th:text="${book.isbn}">ISBN</span>)
-        </dt>
-        <dd class="bookDescription">
-          <span th:if="${book.description}"
-                th:text="${book.description}">Description</span>
-          <span th:if="${book.description eq null}">
-                No description available</span>
-        </dd>
-      </dl>
-    </div>
-    <div th:if="${#lists.isEmpty(books)}">
-      <p>You have no books in your book list</p>
-    </div>
-
-
-    <hr/>
-
-    <h3>Add a book</h3>
-    <form method="POST">
-      <label for="title">Title:</label>
-        <input type="text" name="title" size="50"></input><br/>
-      <label for="author">Author:</label>
-        <input type="text" name="author" size="50"></input><br/>
-      <label for="isbn">ISBN:</label>
-        <input type="text" name="isbn" size="15"></input><br/>
-      <label for="description">Description:</label><br/>
-        <textarea name="description" cols="80" rows="5"></textarea><br/>
-      <input type="submit"></input>
-    </form>
-
-  </body>
-</html>
----------------------------------------------------------------------
-
-. Add a simple style sheet to make our page look like a UI engineer has labored over it by placing the style sheet in  (/hello-spring-boot/src/main/resources/static/style.css).
-+
-[source,css]
----------------------------------------------------------------------
-vvbody {
-	background-color: #cccccc;
-	font-family: arial,helvetica,sans-serif;
+----
+@RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
+public interface CityRepository extends PagingAndSortingRepository<City, Long> {
 }
+----
 
-.bookHeadline {
-	font-size: 12pt;
-	font-weight: bold;
-}
-
-.bookDescription {
-	font-size: 10pt;
-}
-
-label {
-	font-weight: bold;
-}
----------------------------------------------------------------------
-
-Completed:  Our main only has the role of bootstrapping the application. 
+. Add JPA and REST Repository support to the +io.pivotal.cities.Application+ class that was generated by Spring Initializr.
 +
 [source,java]
----------------------------------------------------------------------
-package io.pivotal;
-
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-
+----
 @SpringBootApplication
-public class DataJpaSpringBootApplication {
+@EnableJpaRepositories // <---- Add this
+@Import(RepositoryRestMvcConfiguration.class) // <---- And this
+public class Application {
 
-	public static void main(String[] args) {
-		SpringApplication.run(DataJpaSpringBootApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(Application.class, args);
+    }
 }
-
----------------------------------------------------------------------
+----
 
 == Run the _data-jap-spring-boot_ Application
 
-. In a terminal, change working directory to *CN-Workshop-TM/labs/lab01/data-jpa-spring-boot*
+. Access the application using +curl+. You'll see that the primary endpoint automatically exposes the ability to page, size, and sort the response JSON.
 +
-$ cd /CN-Workshop-TM/labs/lab02/data-jpa--spring-boot
-
-. Run the application
-+
-$ mvn clean spring-boot:run
-
-. You should see the application start up an embedded Apache Tomcat server on port 8080 (review terminal output):
+So what have you done? Created four small classes and one build file, resulting in a fully-functional REST microservice. The application's +DataSource+ is created automatically by Spring Boot using the in-memory database because no other +DataSource+ was detected in the project.
 +
 [source,bash]
----------------------------------------------------------------------
-2015-10-02 13:26:59.264  INFO 44749 --- [lication.main()] s.b.c.e.t.TomcatEmbeddedServletContainer: Tomcat started on port(s): 8080 (http)
-2015-10-02 13:26:59.267  INFO 44749 --- [lication.main()] io.pivotal.hello.HelloSpringBootApplication: Started HelloSpringBootApplication in 2.541 seconds (JVM running for 9.141)
----------------------------------------------------------------------
+----
+$ curl -i localhost:8080/cities
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 19:34:45 GMT
 
-. Browse to http://localhost:8080
+{
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/cities{?page,size,sort}",
+      "templated" : true
+    }
+  },
+  "page" : {
+    "size" : 20,
+    "totalElements" : 0,
+    "totalPages" : 0,
+    "number" : 0
+  }
+}
+----
 
-. Stop the _hello-spring-boot_ application. In the terminal window: *Ctrl + C*
++
+Next we'll import some data.
 
-== Deploy _data-jpa-spring-boot_ to Pivotal Cloud Foundry
+== Importing Data
+== Change the URL below
 
-. Build the application
+. Add this https://github.com/cf-platform-eng/spring-boot-cities/blob/master/cities-service/src/main/resources/import.sql[import.sql file] to +src/main/resources+. This is a rather large dataset containing all of the postal codes in the United States and its territories. This file will automatically be picked up by Hibernate and imported into the in-memory database.
+
+. Access the application again using +curl+. Notice the appropriate hypermedia is included for +next+, +previous+, and +self+. You can also select pages and page size by utilizing +?size=n&page=n+ on the URL string. Finally, you can sort the data utilizing +?sort=fieldName+.
 +
 [source,bash]
----------------------------------------------------------------------
-$ mvn clean package
----------------------------------------------------------------------
+----
+$ curl -i localhost:8080/cities
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 19:59:58 GMT
 
-. Create an application manifest in the root folder /hello-spring-boot
-+
-$ touch manifest.yml
+{
+  "_links" : {
+    "next" : {
+      "href" : "http://localhost:8080/cities?page=1&size=20"
+    },
+    "self" : {
+      "href" : "http://localhost:8080/cities{?page,size,sort}",
+      "templated" : true
+    }
+  },
+  "_embedded" : {
+    "cities" : [ {
+      "name" : "HOLTSVILLE",
+      "county" : "SUFFOLK",
+      "stateCode" : "NY",
+      "postalCode" : "00501",
+      "latitude" : "+40.922326",
+      "longitude" : "-072.637078",
+      "_links" : {
+        "self" : {
+          "href" : "http://localhost:8080/cities/1"
+        }
+      }
+    },
 
-. Add application metadata
+    // ...
+
+    {
+      "name" : "CASTANER",
+      "county" : "LARES",
+      "stateCode" : "PR",
+      "postalCode" : "00631",
+      "latitude" : "+18.269187",
+      "longitude" : "-066.864993",
+      "_links" : {
+        "self" : {
+          "href" : "http://localhost:8080/cities/20"
+        }
+      }
+    } ]
+  },
+  "page" : {
+    "size" : 20,
+    "totalElements" : 42741,
+    "totalPages" : 2138,
+    "number" : 0
+  }
+}
+----
+
+. Try the following +curl+ statements to see how the application behaves:
 +
-[source, bash]
----------------------------------------------------------------------
+[source,bash]
+----
+$ curl -i "localhost:8080/cities?size=5"
+$ curl -i "localhost:8080/cities?size=5&page=3"
+$ curl -i "localhost:8080/cities?sort=postalCode,desc"
+----
++
+Next we'll add searching capabilities.
+
+== Adding Search
+
+. Let's add some additional finder methods to +CityRepository+:
++
+[source,java]
+----
+@RestResource(path = "name", rel = "name")
+Page<City> findByNameIgnoreCase(@Param("q") String name, Pageable pageable);
+
+@RestResource(path = "nameContains", rel = "nameContains")
+Page<City> findByNameContainsIgnoreCase(@Param("q") String name, Pageable pageable);
+
+@RestResource(path = "state", rel = "state")
+Page<City> findByStateCodeIgnoreCase(@Param("q") String stateCode, Pageable pageable);
+
+@RestResource(path = "postalCode", rel = "postalCode")
+Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
+----
+
+. Run the application:
+
+. Access the application again using +curl+. Notice that hypermedia for a new +search+ endpoint has appeared.
++
+[source,bash]
+----
+$ curl -i "localhost:8080/cities"
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 20:33:52 GMT
+
+{
+  "_links" : {
+    "next" : {
+      "href" : "http://localhost:8080/cities?page=1&size=20"
+    },
+    "self" : {
+      "href" : "http://localhost:8080/cities{?page,size,sort}",
+      "templated" : true
+    },
+    "search" : {
+      "href" : "http://localhost:8080/cities/search"
+    }
+},
+// (Remainder omitted...)
+----
+
+. Access the new +search+ endpoint using +curl+:
++
+[source,bash]
+----
+$ curl -i "localhost:8080/cities/search"
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 20:38:32 GMT
+
+{
+  "_links" : {
+    "postalCode" : {
+      "href" : "http://localhost:8080/cities/search/postalCode{?q,page,size,sort}",
+      "templated" : true
+    },
+    "state" : {
+      "href" : "http://localhost:8080/cities/search/state{?q,page,size,sort}",
+      "templated" : true
+    },
+    "name" : {
+      "href" : "http://localhost:8080/cities/search/name{?q,page,size,sort}",
+      "templated" : true
+    },
+    "nameContains" : {
+      "href" : "http://localhost:8080/cities/search/nameContains{?q,page,size,sort}",
+      "templated" : true
+    }
+  }
+}
+----
++
+Note that we now have new search endpoints for each of the finders that we added.
+
+. Try a few of these endpoints. Feel free to substitute your own values for the parameters.
++
+[source,bash]
+----
+$ curl -i "http://localhost:8080/cities/search/postalCode?q=75202"
+$ curl -i "http://localhost:8080/cities/search/name?q=Boston"
+$ curl -i "http://localhost:8080/cities/search/nameContains?q=Fort&size=1"
+----
+
+== Pushing to Cloud Foundry
+
+. Create an application manifest in +manifest.yml+:
++
+[source,yml]
+----
 ---
 applications:
-- name: data-jpa-spring-boot
-  host: data-jpa-spring-boot-${random-word}
+- name: cities
+  host: cities-${random-word}
   memory: 512M
   instances: 1
-  path: ./target/data-jpa-spring-boot-0.0.1-SNAPSHOT.jar
-  buildpack: java_buildpack_offline
----------------------------------------------------------------------
+  path: build/libs/cities-0.0.1-SNAPSHOT.jar
+  timeout: 180 # to give time for the data to import
+----
 
-. Push application into Cloud Foundry
+. Push to Cloud Foundry:
 +
-$ cf push -f manifest.yml
+[source,bash]
+----
+$ cf push
 
-. Find the URL created for your app in the health status report. Browse to your app.
+...
 
-*Congratulations!* You’ve just added persistence to a Spring Boot application.
+1 of 1 instances running
 
+App started
+
+Showing health and status for app cities...
+OK
+
+requested state: started
+instances: 1/1
+usage: 512M x 1 instances
+urls: cities-undeliverable-iatrochemistry.cf.mycloud.com
+
+     state     since                    cpu    memory         disk
+#0   running   2014-05-27 04:15:05 PM   0.0%   433M of 512M   128.9M of 1G
+----
+
+. Access the application at the random route provided by CF:
++
+[source,bash]
+----
+$ curl -i cities-undeliverable-iatrochemistry.cf.mycloud.com/cities
+----
