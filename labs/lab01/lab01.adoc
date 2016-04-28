@@ -13,7 +13,7 @@ Artifact:: +cloud-native-spring+
 
 . In the dependencies section, add the following:
 +
-*Web* *Rest Repositories* *JPA* *H2* *MySQL*
+*Web* *Rest Repositories* *JPA* *H2* *MySQL* *Actuator*
 
 . Click the _Generate Project_ button. Your browser will download a zip file.
 
