@@ -7,10 +7,10 @@ NOTE: The completed code for this lab can be found at `$COURSE_HOME/day_01/sessi
 
 == Create a Hypermedia-Driven RESTful Web Service with Spring Data REST (using JPA)
 
-This application will create a simple reading list by asking for books you have read and storing them in a simple relational repository. We'll continue building upon the Spring Boot application we build in Lab 1.  The first stereotype we will need is the domain model itself, which is Book.
+This application will create a simple reading list by asking for books you have read and storing them in a simple relational repository. We'll continue building upon the Spring Boot application we build in Lab 1.  The first stereotype we will need is the domain model itself, which is `City`.
 
-== Add the domain object - Book
-. Create the package io.pivotal.domain and in that package create the class City. Into that file you can paste the following source code, which represents cities based on postal codes, global coordinates, etc:
+== Add the domain object - City
+. Create the package `io.pivotal.domain` and in that package create the class `City`. Into that file you can paste the following source code, which represents cities based on postal codes, global coordinates, etc:
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
