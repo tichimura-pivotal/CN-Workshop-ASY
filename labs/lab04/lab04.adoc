@@ -1,101 +1,100 @@
 = Adding Spring Cloud Config to Boot Application
 
-== Update _Hello_ REST service to be dynamic from config
+In this lab we'll utilize Spring Boot and Spring Cloud to configure our application from a configuration dynamically retrieved from a git repository. We'll then deploy it to Pivotal Cloud Foundry and auto-provision an instance of a configuration server using Pivotal Spring Cloud Services.
 
+== Update _Hello_ REST service
 
+. These features are added by adding _spring-cloud-starter-config_ to the classpath.  During our initial project setup with *start.spring.io* we've already included that.
 
-== Create a Spring Boot Project
-
-. Browse to https://start.spring.io
-
-. Generate a Maven Project with Spring Boot 1.3 (if this version is unavailable then get the latest 1.3.X version, but no SNAPSHOTS).
-
-. Fill out the *Project metadata* fields as follows:
+. Verify the Spring Cloud Config dependency the following file: */cloud-native-spring/pom.xml*.  You should see the following dependency in the list:
 +
-Group:: +io.pivotal+
-Artifact:: +cloud-native-spring+
-
-. In the dependencies section, add the following:
-+
-*Web* *Rest Repositories* *JPA* *H2* *MySQL* *Actuator*
-
-. Click the _Generate Project_ button. Your browser will download a zip file.
-
-. Copy then unpack the downloaded zip file to *CN-Workshop-TM/labs/lab01/cloud-native-spring*
-+
-Your directory structure should now look like:
-+
-[source, bash]
+[source, xml]
 ---------------------------------------------------------------------
-CN-Workshop-TM:
-├── labs
-│   ├── lab01
-│   │   ├── cloud-native-spring
+<dependency>
+  <groupId>org.springframework.cloud</groupId>
+  <artifactId>spring-cloud-starter-config</artifactId>
+</dependency>
 ---------------------------------------------------------------------
 
-. Import the project’s pom.xml into your editor/IDE of choice.
-+
-*_STS Import Help:_*
-+
-Select File > Import… Then select Maven > Existing Maven Projects. On the Import Maven Projects page, browse to the /cloud-native-spring directory (e.g. CN-Workshop-TM/labs/lab01/cloud-native-spring)
-
-== Add an Endpoint
-
-. Add an @RestController annotation to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeApplication.java).
+. Add an @Value annotation, private field, and associated usage to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeApplication.java):
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
-package io.pivotal;
+    @Value("${greeting}")
+	private String _greeting;
 
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.web.bind.annotation.RestController;
-
-@SpringBootApplication
-@RestController
-public class CloudNativeSpringApplication {
-
-    public static void main(String[] args) {
-        SpringApplication.run(CloudNativeSpringApplication.class, args);
-    }
-}
----------------------------------------------------------------------
-
-. Add the following request handler to the class _io.pivotal.CloudNativeSpringApplication (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
-+
-[source,java]
----------------------------------------------------------------------
-@RequestMapping("/")
-public String hello() {
-    return "Hello World!";
-}
+	@RequestMapping("/")
+	public String hello() {
+		return _greeting + " World!";
+	}
 ---------------------------------------------------------------------
 +
 Completed:
 +
-[source,java]
+[source,java,numbered]
 ---------------------------------------------------------------------
 package io.pivotal;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.data.rest.RepositoryRestMvcAutoConfiguration;
+import org.springframework.context.annotation.Import;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @SpringBootApplication
 @RestController
+@EnableJpaRepositories
+@Import(RepositoryRestMvcAutoConfiguration.class)
 public class CloudNativeSpringApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(CloudNativeSpringApplication.class, args);
-    }
+	public static void main(String[] args) {
+		SpringApplication.run(CloudNativeSpringApplication.class, args);
+	}
 
-    @RequestMapping("/")
-    public String hello() {
-        return "Hello World!";
-    }
+	@Value("${greeting}")
+	private String _greeting;
+
+	@RequestMapping("/")
+	public String hello() {
+		return _greeting + " World!";
+	}
 }
 ---------------------------------------------------------------------
+
+. Now we must create a temporary default value for the property.  Add the following to */cloud-native-spring/src/main/resources/application.yml*:
++
+[source, yaml]
+---------------------------------------------------------------------
+greeting: Hola
+---------------------------------------------------------------------
+
+== Run the _cloud-native-spring_ Application and verify dynamic config is working
+
+. Run the application
++
+$ mvn clean spring-boot:run
+
+. You should see the application start up an embedded Apache Tomcat server on port 8080 (review terminal output):
++
+[source,bash]
+---------------------------------------------------------------------
+2015-10-02 13:26:59.264  INFO 44749 --- [lication.main()] s.b.c.e.t.TomcatEmbeddedServletContainer: Tomcat started on port(s): 8080 (http)
+2015-10-02 13:26:59.267  INFO 44749 --- [lication.main()] io.pivotal.hello.CloudNativeSpringApplication: Started CloudNativeSpringApplication in 2.541 seconds (JVM running for 9.141)
+---------------------------------------------------------------------
+
+. Browse to http://localhost:8080 and verify you now see your new greeting.
+
+. Stop the _cloud-native-spring_ application
+
+== Create Spring Cloud Config Server instance
+
+== Deploy and test application
+
+
+
 
 == Run the _cloud-native-spring_ Application
 

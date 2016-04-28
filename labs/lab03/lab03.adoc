@@ -255,21 +255,9 @@ Normally, when Spring Security is not enabled, the /health endpoint will only ex
 +
 [source, yaml]
 ---------------------------------------------------------------------
-{
-  "build" : {
-    "artifact" : "cloud-native-spring",
-    "name" : "cloud-native-spring",
-    "description" : "Demo project for Spring Boot",
-    "version" : "0.0.1-SNAPSHOT"
-  },
-  "git" : {
-    "branch" : "master",
-    "commit" : {
-      "id" : "4346145",
-      "time" : "2016-04-28T11:30:21-0400"
-    }
-  }
-}
+endpoints:
+  health:
+    sensitive: false
 ---------------------------------------------------------------------
 
 . Build and run the cloud-native-spring application:
