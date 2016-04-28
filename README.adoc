@@ -25,7 +25,7 @@ This one day hands-on classroom style session will provide developers with hands
 1:30 PM - 2:45 PM::
   * Session 5: link:presentations/Session_5_Intro_SC.pptx[_Introducing Spring Cloud Netflix_]
   * Session 6: link:presentations/Session_6_SC_Config.pptx[_Spring Cloud Config_]
-  * Lab 4: Introducing Spring Cloud into Boot Application (TODO: Adam Z)
+  * Lab 4: link:labs/lab04/lab04.adoc[Introducing Spring Cloud into Boot Application]
 2:45 PM - 3:00 PM:: Break
 3:00 PM - 3:45 PM::
   * Session 7: link:presentations/Session_7_SC_Discovery_LB.pptx[_Spring Cloud Netflix - Service Discovery & Load Balancing_]
