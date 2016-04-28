@@ -210,7 +210,9 @@ Date: Tue, 27 May 2014 19:59:58 GMT
 . Try the following URL Paths in your browser or +curl+ to see how the application behaves:
 +
 http://localhost:8080/cities?size=5
++
 http://localhost:8080/cities?size=5&page=3
++
 http://localhost:8080/cities?sort=postalCode,desc
 
 Next we'll add searching capabilities.
