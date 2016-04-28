@@ -236,7 +236,7 @@ Page<City> findByStateCodeIgnoreCase(@Param("q") String stateCode, Pageable page
 Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
 ---------------------------------------------------------------------
 
-. Run the application:
+. Run the application
 
 . Access the application again. Notice that hypermedia for a new +search+ endpoint has appeared.
 +
