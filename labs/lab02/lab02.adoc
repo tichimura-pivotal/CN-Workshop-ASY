@@ -314,6 +314,13 @@ http://localhost:8080/cities/search/nameContains?q=Fort&size=1
 
 == Pushing to Cloud Foundry
 
+. Build the application
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean package
+---------------------------------------------------------------------
+
 . You should already have an application manifest, +manifest.yml+, created in lab 1; this can be reused.  You'll want to add a timeout param so that our service has enough time to initialize with its data loading:
 +
 [source,yml]
