@@ -21,7 +21,7 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 [source, java, numbered]
 ---------------------------------------------------------------------
     @Value("${greeting}")
-	private String _greeting;
+    private String _greeting;
 
 	@RequestMapping("/")
 	public String hello() {
