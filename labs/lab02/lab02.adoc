@@ -238,7 +238,7 @@ Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
 
 . Run the application:
 
-. Access the application again using +curl+. Notice that hypermedia for a new +search+ endpoint has appeared.
+. Access the application again. Notice that hypermedia for a new +search+ endpoint has appeared.
 +
 [source,bash]
 ---------------------------------------------------------------------
@@ -266,7 +266,9 @@ Date: Tue, 27 May 2014 20:33:52 GMT
 // (Remainder omitted...)
 ---------------------------------------------------------------------
 
-. Access the new +search+ endpoint using +curl+:
+. Access the new +search+ endpoint:
++
+http://localhost:8080/cities/search
 +
 [source,bash]
 ---------------------------------------------------------------------
@@ -304,26 +306,26 @@ Note that we now have new search endpoints for each of the finders that we added
 
 . Try a few of these endpoints. Feel free to substitute your own values for the parameters.
 +
-[source,bash]
----------------------------------------------------------------------
-$ curl -i "http://localhost:8080/cities/search/postalCode?q=75202"
-$ curl -i "http://localhost:8080/cities/search/name?q=Boston"
-$ curl -i "http://localhost:8080/cities/search/nameContains?q=Fort&size=1"
----------------------------------------------------------------------
+http://localhost:8080/cities/search/postalCode?q=75202
++
+http://localhost:8080/cities/search/name?q=Boston
++
+http://localhost:8080/cities/search/nameContains?q=Fort&size=1
 
 == Pushing to Cloud Foundry
 
-. Create an application manifest in +manifest.yml+:
+. You should already have an application manifest, +manifest.yml+, created in lab 1; this can be reused.  You'll want to add a timeout param so that our service has enough time to initialize with its data loading:
 +
 [source,yml]
 ---------------------------------------------------------------------
 ---
 applications:
-- name: cities
-  host: cities-${random-word}
+- name: cloud-native-spring
+  host: cloud-native-spring-${random-word}
   memory: 512M
   instances: 1
-  path: build/libs/cities-0.0.1-SNAPSHOT.jar
+  path: ./target/cloud-native-spring-0.0.1-SNAPSHOT.jar
+  buildpack: java_buildpack_offline
   timeout: 180 # to give time for the data to import
 ---------------------------------------------------------------------
 
@@ -339,13 +341,13 @@ $ cf push
 
 App started
 
-Showing health and status for app cities...
+Showing health and status for app cloud-native-spring...
 OK
 
 requested state: started
 instances: 1/1
 usage: 512M x 1 instances
-urls: cities-undeliverable-iatrochemistry.cf.mycloud.com
+urls: cloud-native-spring-undeliverable-iatrochemistry.cf.mycloud.com
 
      state     since                    cpu    memory         disk
 #0   running   2014-05-27 04:15:05 PM   0.0%   433M of 512M   128.9M of 1G
@@ -355,5 +357,5 @@ urls: cities-undeliverable-iatrochemistry.cf.mycloud.com
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ curl -i cities-undeliverable-iatrochemistry.cf.mycloud.com/cities
+$ curl -i cloud-native-spring-undeliverable-iatrochemistry.cf.mycloud.com/cities
 ---------------------------------------------------------------------
