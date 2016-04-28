@@ -93,11 +93,11 @@ public class CloudNativeSpringApplication {
 }
 ---------------------------------------------------------------------
 
-== Run the _hello-spring-boot_ Application
+== Run the _cloud-native-spring_ Application
 
-. In a terminal, change working directory to *CN-Workshop-TM/labs/lab01/hello-spring-boot*
+. In a terminal, change working directory to *CN-Workshop-TM/labs/lab01/cloud-native-spring*
 +
-$ cd /CN-Workshop-TM/labs/lab01/hello-spring-boot
+$ cd /CN-Workshop-TM/labs/lab01/cloud-native-spring
 
 . Run the application
 +
@@ -108,12 +108,12 @@ $ mvn clean spring-boot:run
 [source,bash]
 ---------------------------------------------------------------------
 2015-10-02 13:26:59.264  INFO 44749 --- [lication.main()] s.b.c.e.t.TomcatEmbeddedServletContainer: Tomcat started on port(s): 8080 (http)
-2015-10-02 13:26:59.267  INFO 44749 --- [lication.main()] io.pivotal.hello.HelloSpringBootApplication: Started HelloSpringBootApplication in 2.541 seconds (JVM running for 9.141)
+2015-10-02 13:26:59.267  INFO 44749 --- [lication.main()] io.pivotal.hello.CloudNativeSpringApplication: Started CloudNativeSpringApplication in 2.541 seconds (JVM running for 9.141)
 ---------------------------------------------------------------------
 
 . Browse to http://localhost:8080
 
-. Stop the _hello-spring-boot_ application. In the terminal window: *Ctrl + C*
+. Stop the _cloud-native-spring_ application. In the terminal window: *Ctrl + C*
 
 == Deploy _cloud-native-spring_ to Pivotal Cloud Foundry
 
