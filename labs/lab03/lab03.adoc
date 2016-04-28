@@ -2,34 +2,9 @@
 
 == Set up the Actuator
 
-Spring Boot includes a number of additional features to help you monitor and manage your application when it’s pushed to production. These features are added by adding _spring-boot-starter-actuator_ to the classpath.
+Spring Boot includes a number of additional features to help you monitor and manage your application when it’s pushed to production. These features are added by adding _spring-boot-starter-actuator_ to the classpath.  During our initial project setup with *start.spring.io* we've already included that.
 
-. Open a terminal window and change to lab03 directory
-+
-$ cd CN-Workshop-TM/labs/lab03
-
-. Copy your progress from lab02 to lab03
-+
-$ cp -rf ../lab02/data-jpa-spring-boot .
-
-+
-Be sure your current working directory is CN-Workshop-TM/labs/lab03
-+
-Your directory structure should now look like:
-+
-[source,bash]
----------------------------------------------------------------------
-CN-Workshop-TM:
-├── labs
-│   ├── lab01
-│   │   └── hello-spring-boot
-│   ├── lab02
-│   │   └── data-jpa-spring-boot
-│   └── lab03
-│       └── data-jpa-spring-boot
----------------------------------------------------------------------
-
-. Add the Spring Boot Actuator dependency the following file: /data-jpa-spring-boot/pom.xml
+. Verify the Spring Boot Actuator dependency the following file: */cloud-native-spring/pom.xml.  You should see the following dependency in the list:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -39,7 +14,7 @@ CN-Workshop-TM:
 </dependency>
 ---------------------------------------------------------------------
 
-. Run the updated _data-jpa-spring-boot_ application:
+. Run the updated application
 +
 $ mvn clean spring-boot:run
 +
@@ -73,7 +48,7 @@ http://localhost:8080/trace
 +
 Displays trace information (by default the last few HTTP requests).
 
-. Stop the data-jpa-spring-boot application.
+. Stop the cloud-native-spring application.
 
 == Include Version Control Info
 
@@ -223,7 +198,7 @@ $ mvn clean package
 $ java -jar target/data-jpa-spring-boot-0.0.1-SNAPSHOT.jar
 ---------------------------------------------------------------------
 
-. Browse to http://localhost:8080/info. Build information is now included. 
+. Browse to http://localhost:8080/info. Build information is now included.
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -256,7 +231,7 @@ Read more about exposing data in the /info endpoint link:http://docs.spring.io/s
 
 Spring Boot provides an endpoint http://localhost:8080/health that exposes various health indicators that describe the health of the given application.
 
-Normally, when Spring Security is not enabled, the /health endpoint will only expose an UP or DOWN value. 
+Normally, when Spring Security is not enabled, the /health endpoint will only expose an UP or DOWN value.
 
 [source,json]
 ---------------------------------------------------------------------
@@ -336,7 +311,7 @@ public class FlappingHealthIndicator implements HealthIndicator {
 +
 This demo health indicator will randomize the health check.
 
-. Build and run the _data-jpa-spring-boot_ application: 
+. Build and run the _data-jpa-spring-boot_ application:
 +
 [source,bash]
 ---------------------------------------------------------------------
@@ -344,7 +319,7 @@ $ mvn clean package
 $ java -jar target/data-jpa-spring-boot-0.0.1-SNAPSHOT.jar
 ---------------------------------------------------------------------
 
-. Browse to http://localhost:8080/health and verify that the output is similar to the following (and changes randomly!). 
+. Browse to http://localhost:8080/health and verify that the output is similar to the following (and changes randomly!).
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -367,7 +342,7 @@ $ java -jar target/data-jpa-spring-boot-0.0.1-SNAPSHOT.jar
 
 Spring Boot provides an endpoint http://localhost:8080/metrics that exposes several automatically collected metrics for your application. It also allows for the creation of custom metrics.
 
-. Browse to http://localhost:8080/metrics. Review the metrics exposed. 
+. Browse to http://localhost:8080/metrics. Review the metrics exposed.
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -441,4 +416,3 @@ $ cf push -f manifest.yml
 . Find the URL created for your app in the health status report. Browse to your app.
 
 *Congratulations!* You’ve just learned how to add health and metrics to any Spring Boot application.
-
