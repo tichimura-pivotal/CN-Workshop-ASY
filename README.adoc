@@ -32,5 +32,5 @@ This one day hands-on classroom style session will provide developers with hands
   * Lab 5: link:labs/lab05/lab05.adoc[Microservice Service Discover and Load Balancing]
 3:45 PM - 4:30 PM::
   * Session 8: link:presentations/Session_8_Circuit_Breaker.pptx[_Spring Cloud Netflix - Circuit Breakers_]
-  * Lab 6: link:labs/lab06/lab06.adcom[Microservice Fault Tolerance with Circuit Breakers]
+  * Lab 6: link:labs/lab06/lab06.adoc[Microservice Fault Tolerance with Circuit Breakers]
 4:30 PM:: Wrap-Up and Closing
