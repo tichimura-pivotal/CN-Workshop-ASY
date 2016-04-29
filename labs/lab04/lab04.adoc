@@ -88,6 +88,7 @@ management:
 
 . We'll also want to give our Spring Boot App a name so that it can lookup application-specific configuration from the config server later.  Add the following configuration to */cloud-native-spring/src/main/resources/application.yml*:
 +
+[source, yaml]
 ---------------------------------------------------------------------
 spring:
   application:
@@ -96,6 +97,7 @@ spring:
 
 . Complete YML:
 +
+[source, yaml]
 ---------------------------------------------------------------------
 spring:
   application:
@@ -149,6 +151,3 @@ $ mvn clean spring-boot:run
 . Test... Bonjour!
 
 . What happened??  Service connectors, bound prop service, read specfic prop file
-
-
-
