@@ -14,16 +14,6 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 	<version>1.1.0.BUILD-SNAPSHOT</version>
 </dependency>
 ---------------------------------------------------------------------
-+
-You'll also need to add a reference to the correct artifact repository.  Add the following snippet to the *repositories* section of your POM:
-+
-[source, xml]
----------------------------------------------------------------------
-<repository>
-	<id>spring-release</id>
-	<url>https://repo.spring.io/libs-release</url>
-</repository>
----------------------------------------------------------------------
 
 . Add an @Value annotation, private field, and associated usage to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeApplication.java):
 +

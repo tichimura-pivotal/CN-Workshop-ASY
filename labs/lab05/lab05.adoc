@@ -129,7 +129,7 @@ image::images/registry2.jpg[]
 
 . Next we'll create a simple UI application that will read the service registry to discover the location of our cities REST service and connect.
 
-== Create another Spring Boot Project as a Client Application
+== Create another Spring Boot Project as a Client UI
 
 . Browse to https://start.spring.io
 
@@ -142,7 +142,7 @@ Artifact:: +cloud-native-spring-ui+
 
 . In the dependencies section, add the following:
 +
-*Web* *Rest Repositories* *JPA* *H2* *MySQL* *Actuator* *Eureka Discovery*
+*Vaadin* *Actuator* *Feign*
 
 . Click the _Generate Project_ button. Your browser will download a zip file.
 
@@ -161,3 +161,164 @@ CN-Workshop-TM:
 ---------------------------------------------------------------------
 
 . Import the project’s pom.xml into your editor/IDE of choice.
+
+. As before, we need to add _spring-cloud-services-starter-service-registry_ to the classpath.  Open your Maven POM found here: */cloud-native-spring-ui/pom.xml*.  Add the following spring cloud services dependency:
++
+[source, xml]
+---------------------------------------------------------------------
+<dependency>
+    <groupId>io.pivotal.spring.cloud</groupId>
+	<artifactId>spring-cloud-services-starter-service-registry</artifactId>
+	<version>1.1.0.BUILD-SNAPSHOT</version>
+</dependency>
+---------------------------------------------------------------------
++
+We'll also be using the Domain object from our main Boot application.  Add that as a dependency too:
++
+[source, xml]
+---------------------------------------------------------------------
+<dependency>
+    <groupId>io.pivotal</groupId>
+	<artifactId>cloud-native-spring</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+</dependency>
+---------------------------------------------------------------------
+
+. Since this UI is going to consume REST services its an awesome opportunity to use Feign/  Feign will handle *ALL* the work of invoking our services and marshalling/unmarshalling JSON into domain objects.  We'll add a Feign Client interface into our app.  Take note of how Feign references the downstream service; its only the name of the service it will lookup from Eureka service registry.
++
+[source,java,numbered]
+---------------------------------------------------------------------
+@FeignClient("cloud-native-spring")
+	public interface CityClient {
+
+		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
+		Resources<City> getCities();
+	}
+---------------------------------------------------------------------
++
+We'll also need to add a few annotations to our boot application:
++
+[source,java,numbered]
+---------------------------------------------------------------------
+@SpringBootApplication
+@EnableFeignClients
+@EnableDiscoveryClient
+public class CloudNativeSpringUiApplication {
+---------------------------------------------------------------------
++
+Completed:
++
+[source,java,numbered]
+---------------------------------------------------------------------
+package io.pivotal;
+
+import io.pivotal.domain.City;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
+import org.springframework.cloud.netflix.feign.EnableFeignClients;
+import org.springframework.cloud.netflix.feign.FeignClient;
+import org.springframework.hateoas.Resources;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+@SpringBootApplication
+@EnableFeignClients
+@EnableDiscoveryClient
+public class CloudNativeSpringUiApplication {
+
+	public static void main(String[] args) {
+		SpringApplication.run(CloudNativeSpringUiApplication.class, args);
+	}
+
+	@FeignClient("cloud-native-spring")
+	public interface CityClient {
+
+		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
+		Resources<City> getCities();
+	}
+}
+
+---------------------------------------------------------------------
+
+. Next we'll create a Vaadin UI for rendering our data.  The point of this workshopp isn't to go into detail on creating UIs; for now suffice to say that Vaadin is a great tool for quickly creating User Interfaces.  Our UI will consume our Feign client we just created.  Create the class _io.pivotal.AppUI_ (/cloud-native-spring-ui/src/main/java/io/pivotal/AppUI.java) and into it paste the following code:
++
+[source,java]
+---------------------------------------------------------------------
+package io.pivotal;
+
+import com.vaadin.annotations.Theme;
+import com.vaadin.data.util.BeanItemContainer;
+import com.vaadin.server.VaadinRequest;
+import com.vaadin.spring.annotation.SpringUI;
+import com.vaadin.ui.Grid;
+import com.vaadin.ui.UI;
+import io.pivotal.domain.City;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+@SpringUI
+@Theme("valo")
+public class AppUI extends UI {
+
+    private final CloudNativeSpringUiApplication.CityClient _client;
+    private final Grid _grid;
+
+    @Autowired
+    public AppUI(CloudNativeSpringUiApplication.CityClient client) {
+        _client = client;
+        _grid = new Grid();
+    }
+
+    @Override
+    protected void init(VaadinRequest request) {
+        setContent(_grid);
+        _grid.setWidth(100, Unit.PERCENTAGE);
+        _grid.setHeight(100, Unit.PERCENTAGE);
+        Collection<City> collection = new ArrayList<City>();
+        _client.getCities().forEach(collection::add);
+        _grid.setContainerDataSource(new BeanItemContainer<City>(City.class, collection));
+    }
+}
+---------------------------------------------------------------------
+. We'll also want to give our UI App a name so that it can register properly with Eureka and potentially use cloud config in the future.  Add the following configuration to */cloud-native-spring-ui/src/main/resources/application.properties*:
++
+[source, yaml]
+---------------------------------------------------------------------
+spring.application.name=cloud-native-spring-ui
+---------------------------------------------------------------------
+
+== Deploy and test application
+
+. Build the application
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean package
+---------------------------------------------------------------------
+
+. Create Manifest
+
+. Push application into Cloud Foundry
++
+[source,bash]
+---------------------------------------------------------------------
+$ cf push -f manifest.yml
+---------------------------------------------------------------------
+
+. Test your application by navigating to the root URL of the application, which will invoke the hello() service.  You should now see a greeting that is read from the cloud config server!
++
+Bon Jour World!
+
+. What just happened??  A Spring component within the Spring Cloud Starter Config Client module called a _service connector_ automatically detected that there was a Cloud Config service bound into the application.  The service connector configured the application automatically to connect to the cloud config server and download the configuration and wire it into the application
+
+. If you navigate to the GIT repo we specified for our configuration, https://github.com/azwickey-pivotal/config-repo, you'll see a file named cloud-native-spring.yml.  This filename is the same as our spring.application.name value for our Boot application.  The configuration is read from this file, in our case the following property:
++
+[source, yaml]
+---------------------------------------------------------------------
+greeting: Bon Jour
+---------------------------------------------------------------------
+
+. Next we'll learn how to register our service with a service registry and load balance requests using Spring Cloud components.
