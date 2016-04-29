@@ -4,23 +4,32 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 
 == Update _Hello_ REST service
 
-. These features are added by adding _spring-cloud-starter-config_ to the classpath.  During our initial project setup with *start.spring.io* we've already included that.
-
-. Verify the Spring Cloud Config dependency the following file: */cloud-native-spring/pom.xml*.  You should see the following dependency in the list:
+. These features are added by adding _spring-cloud-services-starter-config-clien_ to the classpath.  Open you Maven POM found here: */cloud-native-spring/pom.xml*.  Add the following spring cloud services dependency:
 +
 [source, xml]
 ---------------------------------------------------------------------
 <dependency>
-  <groupId>org.springframework.cloud</groupId>
-  <artifactId>spring-cloud-starter-config</artifactId>
+    <groupId>io.pivotal.spring.cloud</groupId>
+	<artifactId>spring-cloud-services-starter-config-client</artifactId>
+	<version>1.0.2.RELEASE</version>
 </dependency>
+---------------------------------------------------------------------
++
+You'll also need to add a reference to the correct artifact repository.  Add the following snippet to the *repositories* section of your POM:
++
+[source, xml]
+---------------------------------------------------------------------
+<repository>
+	<id>spring-release</id>
+	<url>https://repo.spring.io/libs-release</url>
+</repository>
 ---------------------------------------------------------------------
 
 . Add an @Value annotation, private field, and associated usage to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeApplication.java):
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
-    @Value("${greeting:Hello}")
+    @Value("${greeting:Hola}")
     private String _greeting;
 
     @RequestMapping("/")
@@ -54,7 +63,7 @@ public class CloudNativeSpringApplication {
 		SpringApplication.run(CloudNativeSpringApplication.class, args);
 	}
 
-	@Value("${greeting:Hello}")
+	@Value("${greeting:Hola}")
 	private String _greeting;
 
 	@RequestMapping("/")
@@ -64,11 +73,62 @@ public class CloudNativeSpringApplication {
 }
 ---------------------------------------------------------------------
 
+. When we introduced the Spring Cloud Services Starter Config Client dependency Spring Security will also be included (Config servers will be protected by OAuth2).  However, this will also enable basic authentication to all our service endpoints.  Add the following configuration to */cloud-native-spring/src/main/resources/application.yml*:
++
+[source, yaml]
+---------------------------------------------------------------------
+security:
+  basic:
+    enabled:  false
+
+management:
+  security:
+    enabled: false
+---------------------------------------------------------------------
+
+. We'll also want to give our Spring Boot App a name so that it can lookup application-specific configuration from the config server later.  Add the following configuration to */cloud-native-spring/src/main/resources/application.yml*:
++
+---------------------------------------------------------------------
+spring:
+  application:
+    name: cloud-native-spring
+---------------------------------------------------------------------
+
+. Complete YML:
++
+---------------------------------------------------------------------
+spring:
+  application:
+    name: cloud-native-spring
+
+info:
+  build:
+    artifact: @project.artifactId@
+    name: @project.name@
+    description: @project.description@
+    version: @project.version@
+
+endpoints:
+  health:
+    sensitive: false
+
+security:
+  basic:
+    enabled:  false
+
+management:
+  security:
+    enabled: false
+---------------------------------------------------------------------
+
 == Run the _cloud-native-spring_ Application and verify dynamic config is working
 
 . Run the application
 +
+[source,bash]
+---------------------------------------------------------------------
 $ mvn clean spring-boot:run
+---------------------------------------------------------------------
 
 . Browse to http://localhost:8080 and verify you now see your new greeting.
 
@@ -76,17 +136,19 @@ $ mvn clean spring-boot:run
 
 == Create Spring Cloud Config Server instance
 
-.
+. Provision and configure config service
 
-. Now we must create a temporary default value for the property.  Add the following to */cloud-native-spring/src/main/resources/application.yml*:
-+
-[source, yaml]
----------------------------------------------------------------------
-greeting: Hola
----------------------------------------------------------------------
+. Add to manifest service and env variable
+
+. Clean and build
+
+. Push
 
 == Deploy and test application
 
+. Test... Bonjour!
+
+. What happened??  Service connectors, bound prop service, read specfic prop file
 
 
 
