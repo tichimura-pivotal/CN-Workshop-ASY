@@ -154,7 +154,7 @@ Git URI: https://github.com/azwickey-pivotal/config-repo
 +
 ** Leave all the others blank **
 
-. We will now bind our application to our config-server within our Cloudfoundry deployment manifest.  Add these 2 entries to the bottom of */cloud-native-spring/manifest.yml
+. We will now bind our application to our config-server within our Cloudfoundry deployment manifest.  Add these 2 entries to the bottom of */cloud-native-spring/manifest.yml*
 +
 [source, yml]
 ---------------------------------------------------------------------
