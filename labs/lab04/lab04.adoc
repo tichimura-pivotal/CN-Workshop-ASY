@@ -151,18 +151,60 @@ image::images/config-scs1.jpg[]
 image::images/config-scs2.jpg[]
 +
 Git URI: https://github.com/azwickey-pivotal/config-repo
-** Leave all the other blank **
++
+** Leave all the others blank **
 
-. Add to manifest service and env variable
-
-
+. We will now bind our application to our config-server within our Cloudfoundry deployment manifest.  Add these 2 entries to the bottom of */cloud-native-spring/manifest.yml
++
+[source, yml]
+---------------------------------------------------------------------
+  env:
+    CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+  services:
+  - config-server
+---------------------------------------------------------------------
++
+Complete:
++
+[source, yml]
+---------------------------------------------------------------------
+---
+applications:
+- name: cloud-native-spring
+  host: cloud-native-spring-${random-word}
+  memory: 512M
+  instances: 1
+  path: ./target/cloud-native-spring-0.0.1-SNAPSHOT.jar
+  buildpack: java_buildpack_offline
+  timeout: 180
+  env:
+    CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+  services:
+  - config-server
+---------------------------------------------------------------------
 
 == Deploy and test application
 
-. Clean and build
+. Build the application
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean package
+---------------------------------------------------------------------
 
-. Push
+. Push application into Cloud Foundry
++
+$ cf push -f manifest.yml
 
-. Test... Bonjour!
+. Test your application by navigating to the root URL of the application, which will invoke the hello() service.  You should now see a greeting that is read from the cloud config server!
++
+Bon Jour World!
 
-. What happened??  Service connectors, bound prop service, read specfic prop file
+. What just happened??  A Spring component within the Spring Cloud Starter Config Client module called a _service connector_ automatically detected that there was a Cloud Config service bound into the application.  The service connector configured the application automatically to connect to the cloud config server and download the configuration and wire it into the application
+
+. If you navigate to the GIT repo we specified for our configuration, https://github.com/azwickey-pivotal/config-repo, you'll see a file named cloud-native-spring.yml.  This filename is the same as our spring.application.name value for our Boot application.  The configuration is read from this file, in our case the following property:
++
+[source, yaml]
+---------------------------------------------------------------------
+greeting: Bon Jour
+---------------------------------------------------------------------
