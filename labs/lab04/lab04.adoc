@@ -11,7 +11,7 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 <dependency>
     <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-config-client</artifactId>
-	<version>1.0.2.RELEASE</version>
+	<version>1.1.0.BUILD-SNAPSHOT</version>
 </dependency>
 ---------------------------------------------------------------------
 +
@@ -194,7 +194,10 @@ $ mvn clean package
 
 . Push application into Cloud Foundry
 +
+[source,bash]
+---------------------------------------------------------------------
 $ cf push -f manifest.yml
+---------------------------------------------------------------------
 
 . Test your application by navigating to the root URL of the application, which will invoke the hello() service.  You should now see a greeting that is read from the cloud config server!
 +

@@ -11,7 +11,7 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 <dependency>
     <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-service-registry</artifactId>
-	<version>1.0.2.RELEASE</version>
+	<version>1.1.0.BUILD-SNAPSHOT</version>
 </dependency>
 ---------------------------------------------------------------------
 +
@@ -118,7 +118,10 @@ $ mvn clean package
 
 . Push application into Cloud Foundry
 +
+[source,bash]
+---------------------------------------------------------------------
 $ cf push -f manifest.yml
+---------------------------------------------------------------------
 
 . If we now test our application URLs we will no change.  However, if we view the Service Registry dashboard (accessible from the _manage_ link in Apps Manager) you will see that a service named cloud-native-spring has registered:
 +
