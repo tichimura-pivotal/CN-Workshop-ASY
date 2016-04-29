@@ -20,7 +20,7 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
-    @Value("${greeting}")
+    @Value("${greeting:Hello}")
     private String _greeting;
 
     @RequestMapping("/")
@@ -54,7 +54,7 @@ public class CloudNativeSpringApplication {
 		SpringApplication.run(CloudNativeSpringApplication.class, args);
 	}
 
-	@Value("${greeting}")
+	@Value("${greeting:Hello}")
 	private String _greeting;
 
 	@RequestMapping("/")
@@ -64,26 +64,11 @@ public class CloudNativeSpringApplication {
 }
 ---------------------------------------------------------------------
 
-. Now we must create a temporary default value for the property.  Add the following to */cloud-native-spring/src/main/resources/application.yml*:
-+
-[source, yaml]
----------------------------------------------------------------------
-greeting: Hola
----------------------------------------------------------------------
-
 == Run the _cloud-native-spring_ Application and verify dynamic config is working
 
 . Run the application
 +
 $ mvn clean spring-boot:run
-
-. You should see the application start up an embedded Apache Tomcat server on port 8080 (review terminal output):
-+
-[source,bash]
----------------------------------------------------------------------
-2015-10-02 13:26:59.264  INFO 44749 --- [lication.main()] s.b.c.e.t.TomcatEmbeddedServletContainer: Tomcat started on port(s): 8080 (http)
-2015-10-02 13:26:59.267  INFO 44749 --- [lication.main()] io.pivotal.hello.CloudNativeSpringApplication: Started CloudNativeSpringApplication in 2.541 seconds (JVM running for 9.141)
----------------------------------------------------------------------
 
 . Browse to http://localhost:8080 and verify you now see your new greeting.
 
@@ -92,6 +77,13 @@ $ mvn clean spring-boot:run
 == Create Spring Cloud Config Server instance
 
 .
+
+. Now we must create a temporary default value for the property.  Add the following to */cloud-native-spring/src/main/resources/application.yml*:
++
+[source, yaml]
+---------------------------------------------------------------------
+greeting: Hola
+---------------------------------------------------------------------
 
 == Deploy and test application
 
