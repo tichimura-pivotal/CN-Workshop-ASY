@@ -241,7 +241,7 @@ public class CloudNativeSpringUiApplication {
 
 ---------------------------------------------------------------------
 
-. Next we'll create a Vaadin UI for rendering our data.  The point of this workshopp isn't to go into detail on creating UIs; for now suffice to say that Vaadin is a great tool for quickly creating User Interfaces.  Our UI will consume our Feign client we just created.  Create the class _io.pivotal.AppUI_ (/cloud-native-spring-ui/src/main/java/io/pivotal/AppUI.java) and into it paste the following code:
+. Next we'll create a Vaadin UI for rendering our data.  The point of this workshop isn't to go into detail on creating UIs; for now suffice to say that Vaadin is a great tool for quickly creating User Interfaces.  Our UI will consume our Feign client we just created.  Create the class _io.pivotal.AppUI_ (/cloud-native-spring-ui/src/main/java/io/pivotal/AppUI.java) and into it paste the following code:
 +
 [source,java]
 ---------------------------------------------------------------------
@@ -299,7 +299,28 @@ spring.application.name=cloud-native-spring-ui
 $ mvn clean package
 ---------------------------------------------------------------------
 
-. Create Manifest
+. Create an application manifest in the root folder /cloud-native-spring-ui
++
+$ touch manifest.yml
+
+. Add application metadata
++
+[source, bash]
+---------------------------------------------------------------------
+---
+applications:
+- name: cloud-native-spring-ui
+  host: cloud-native-spring-ui-${random-word}
+  memory: 1G
+  instances: 1
+  path: ./target/cloud-native-spring-ui-0.0.1-SNAPSHOT.jar
+  buildpack: java_buildpack_offline
+  timeout: 180
+  env:
+    CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+  services:
+  - service-registry
+---------------------------------------------------------------------
 
 . Push application into Cloud Foundry
 +
@@ -308,17 +329,16 @@ $ mvn clean package
 $ cf push -f manifest.yml
 ---------------------------------------------------------------------
 
-. Test your application by navigating to the root URL of the application, which will invoke the hello() service.  You should now see a greeting that is read from the cloud config server!
+. Test your application by navigating to the root URL of the application, which will invoke Vaadin UI.  You should now see a table listing the first set of rows returned from the cities microservice:
 +
-Bon Jour World!
+image::images/ui.jpg[]
 
-. What just happened??  A Spring component within the Spring Cloud Starter Config Client module called a _service connector_ automatically detected that there was a Cloud Config service bound into the application.  The service connector configured the application automatically to connect to the cloud config server and download the configuration and wire it into the application
-
-. If you navigate to the GIT repo we specified for our configuration, https://github.com/azwickey-pivotal/config-repo, you'll see a file named cloud-native-spring.yml.  This filename is the same as our spring.application.name value for our Boot application.  The configuration is read from this file, in our case the following property:
+. From a commandline stop the cloud-native-spring microservice (the original city service, not the new UI)
 +
-[source, yaml]
+[source,bash]
 ---------------------------------------------------------------------
-greeting: Bon Jour
+$ cf stop cloud-native-spring
 ---------------------------------------------------------------------
+. Refresh the UI app.  What happens?  Now you get a nasty error that is not very user friendly!
 
-. Next we'll learn how to register our service with a service registry and load balance requests using Spring Cloud components.
+. Next we'll learn how to make our UI Application more resilient in the case that our downstream services are unavailable.
