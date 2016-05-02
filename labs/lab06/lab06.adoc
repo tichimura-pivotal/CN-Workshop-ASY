@@ -14,6 +14,14 @@ In this lab we'll utilize Spring Boot and Spring Cloud to make our UI Applicatio
 	<version>1.0.1.RELEASE</version>
 </dependency>
 ---------------------------------------------------------------------
++
+. We also need to add a property to override some dependency management issues.  Add the following property to your Maven POM within the <properties> section:
++
+[source, xml]
+---------------------------------------------------------------------
+<spring-cloud-connectors.version>1.2.2.RELEASE</spring-cloud-connectors.version>
+---------------------------------------------------------------------
+
 
 . The first thing we need to add to our application is an @EnableCircuitBreaker annotation to the Spring Boot application.  Add this annotation below the other ones on the CloudNativeSpringUIApplication declaration in the class _io.pivotal.CloudNativeSpringUIApplication_ (/cloud-native-spring-ui/src/main/java/io/pivotal/CloudNativeSpringUIApplication.java):
 +
