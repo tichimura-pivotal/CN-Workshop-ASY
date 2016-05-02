@@ -13,7 +13,7 @@ Artifact:: +cloud-native-spring+
 
 . In the dependencies section, add the following:
 +
-*Web* *Rest Repositories* *JPA* *H2* *MySQL* *Actuator*
+*Web* *Rest Repositories* *JPA* *H2* *Actuator*
 
 . Click the _Generate Project_ button. Your browser will download a zip file.
 
@@ -37,7 +37,7 @@ Select File > Import… Then select Maven > Existing Maven Projects. On the Impo
 
 == Add an Endpoint
 
-. Add an @RestController annotation to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeApplication.java).
+. Add an @RestController annotation to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
