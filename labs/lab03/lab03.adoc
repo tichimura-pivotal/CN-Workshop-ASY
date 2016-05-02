@@ -95,7 +95,7 @@ Completed:
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.3.3.RELEASE</version>
+		<version>1.2.8.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -201,6 +201,19 @@ info: # add this section
 These will add the project’s Maven coordinates to the /info endpoint. The Spring Boot Maven plugin will cause them to automatically be replaced in the assembled JAR.
 +
 *NOTE:* if STS reports a problem with the application.yml due to @ character the problem can safely be ignored.
+
+. Edit the following file: */cloud-native-spring/pom.xml*. Add the following configuration to the _spring-boot-maven-plugin_ in your Maven build:
++
+[source, xml]
+---------------------------------------------------------------------
+<plugin>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-maven-plugin</artifactId>
+	<configuration>
+		<addResources>false</addResources>
+	</configuration>
+</plugin>
+---------------------------------------------------------------------
 
 . Build and run the cloud-native-spring application:
 +
