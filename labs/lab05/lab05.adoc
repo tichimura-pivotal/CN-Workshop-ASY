@@ -232,7 +232,7 @@ public class CloudNativeSpringUiApplication {
 	}
 
 	@FeignClient("cloud-native-spring")
-	public interface CityClient {
+	protected interface CityClient {
 
 		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
 		Resources<City> getCities();
