@@ -9,9 +9,9 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 [source, xml]
 ---------------------------------------------------------------------
 <dependency>
-    <groupId>io.pivotal.spring.cloud</groupId>
+  <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-service-registry</artifactId>
-	<version>1.1.0.M3</version>
+	<version>1.0.1.RELEASE</version>
 </dependency>
 ---------------------------------------------------------------------
 +
@@ -134,7 +134,7 @@ image::images/registry2.jpg[]
 
 . Browse to https://start.spring.io
 
-. Generate a Maven Project with Spring Boot 1.3 (if this version is unavailable then get the latest 1.3.X version, but no SNAPSHOTS).
+. Generate a Maven Project with Spring Boot 1.2.8.
 
 . Fill out the *Project metadata* fields as follows:
 +
@@ -168,9 +168,9 @@ CN-Workshop-TM:
 [source, xml]
 ---------------------------------------------------------------------
 <dependency>
-    <groupId>io.pivotal.spring.cloud</groupId>
+  <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-service-registry</artifactId>
-	<version>1.1.0.M3</version>
+	<version>1.0.1.RELEASE</version>
 </dependency>
 ---------------------------------------------------------------------
 +
@@ -179,17 +179,18 @@ We'll also be using the Domain object from our main Boot application.  Add that 
 [source, xml]
 ---------------------------------------------------------------------
 <dependency>
-    <groupId>io.pivotal</groupId>
+  <groupId>io.pivotal</groupId>
 	<artifactId>cloud-native-spring</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 </dependency>
 ---------------------------------------------------------------------
 
-. Since this UI is going to consume REST services its an awesome opportunity to use Feign/  Feign will handle *ALL* the work of invoking our services and marshalling/unmarshalling JSON into domain objects.  We'll add a Feign Client interface into our app.  Take note of how Feign references the downstream service; its only the name of the service it will lookup from Eureka service registry.
+. Since this UI is going to consume REST services its an awesome opportunity to use Feign.  Feign will handle *ALL* the work of invoking our services and marshalling/unmarshalling JSON into domain objects.  We'll add a Feign Client interface into our app.  Take note of how Feign references the downstream service; its only the name of the service it will lookup from Eureka service registry.  Add the following interface declaration to the _CloudNativeSpringUIApplication_:
 +
 [source,java,numbered]
 ---------------------------------------------------------------------
   @FeignClient("cloud-native-spring")
+  @Component
 	public interface CityClient {
 
 		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
@@ -232,7 +233,7 @@ public class CloudNativeSpringUiApplication {
 		SpringApplication.run(CloudNativeSpringUiApplication.class, args);
 	}
 
-	@FeignClient("cloud-native-spring")
+	@FeignClient("https://cloud-native-spring")
 	protected interface CityClient {
 
 		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
