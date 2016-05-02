@@ -11,7 +11,7 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 <dependency>
     <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-service-registry</artifactId>
-	<version>1.1.0.BUILD-SNAPSHOT</version>
+	<version>1.1.0.M3</version>
 </dependency>
 ---------------------------------------------------------------------
 +
@@ -102,6 +102,7 @@ applications:
   timeout: 180
   env:
     CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   services:
   - config-server
   - service-registry
@@ -169,7 +170,7 @@ CN-Workshop-TM:
 <dependency>
     <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-service-registry</artifactId>
-	<version>1.1.0.BUILD-SNAPSHOT</version>
+	<version>1.1.0.M3</version>
 </dependency>
 ---------------------------------------------------------------------
 +
@@ -188,7 +189,7 @@ We'll also be using the Domain object from our main Boot application.  Add that 
 +
 [source,java,numbered]
 ---------------------------------------------------------------------
-@FeignClient("cloud-native-spring")
+  @FeignClient("cloud-native-spring")
 	public interface CityClient {
 
 		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
@@ -318,6 +319,7 @@ applications:
   timeout: 180
   env:
     CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   services:
   - service-registry
 ---------------------------------------------------------------------
