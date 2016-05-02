@@ -4,7 +4,7 @@ In this lab we'll utilize Spring Boot and Spring Cloud to make our UI Applicatio
 
 == Define a Circuit Breaker within the _UI Application_
 
-. These features are added by adding _spring-cloud-services-starter-circuit-breaker_ to the classpath.  Open you Maven POM found here: */cloud-native-spring/pom.xml*.  Add the following spring cloud services dependency:
+. These features are added by adding _spring-cloud-services-starter-circuit-breaker_ to the classpath.  Open you Maven POM found here: */cloud-native-spring-ui/pom.xml*.  Add the following spring cloud services dependency:
 +
 [source, xml]
 ---------------------------------------------------------------------
