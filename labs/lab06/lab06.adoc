@@ -9,9 +9,9 @@ In this lab we'll utilize Spring Boot and Spring Cloud to make our UI Applicatio
 [source, xml]
 ---------------------------------------------------------------------
 <dependency>
-    <groupId>io.pivotal.spring.cloud</groupId>
+  <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-circuit-breaker</artifactId>
-	<version>1.1.0.M3</version>
+	<version>1.0.1.RELEASE</version>
 </dependency>
 ---------------------------------------------------------------------
 
@@ -26,26 +26,57 @@ In this lab we'll utilize Spring Boot and Spring Cloud to make our UI Applicatio
 public class CloudNativeSpringUiApplication {
 ---------------------------------------------------------------------
 
-. When we introduced an @FeignClient into our application we were only required to provide an interface.  Now we'll create an implementation of our *CityClient* interface that can be used as our Circuit Breaker fallback logic.  Add the following code to the bottom (but still within the class definition) of _io.pivotal.CloudNativeSpringUIApplication_ (/cloud-native-spring-ui/src/main/java/io/pivotal/CloudNativeSpringUIApplication.java):
+. When we introduced an @FeignClient into our application we were only required to provide an interface.  In order to wrap this with a circuit breaker we need to refactor some of our logic into a service interface.  Add the following code, which is our service implementation, to the bottom (but still within the class definition) of _io.pivotal.CloudNativeSpringUIApplication_ (/cloud-native-spring-ui/src/main/java/io/pivotal/CloudNativeSpringUIApplication.java).  NOTE - This is made slightly simpler in Spring Cloud Services 1.1, but this isn't GA'd yet.
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
 @Component
-public static class ClientFallback implements CityClient {
+public class CityService {
 
-	@Override
-	public Resources getCities() {
+	private CloudNativeSpringUiApplication.CityClient _client;
+
+	@Autowired
+	public CityService(CityClient client) {
+		_client = client;
+	}
+
+	@HystrixCommand(fallbackMethod = "getCitiesFallback")
+	public Resources<City> getCities() {
+		return _client.getCities();
+	}
+
+	public Resources getCitiesFallback() {
 		//We'll just return an empty response
 		return new Resources(Collections.EMPTY_LIST);
 	}
 }
 ---------------------------------------------------------------------
 
-. The last thing we need to do is define the method around which we'll wrap the CircuitBreaker.  Typically we'd use an @HystrixCommand annotation on a specific implementation.  However, a @FeignClient automatically wraps all methods of the interface with a Hystrix Circuit Breaker.  We simply need to add an additional attribute in the @FeignClient annotation that points to our fallback implementation.  Add the following attribute to @FeignClient annotation in _io.pivotal.CloudNativeSpringUIApplication_ (/cloud-native-spring-ui/src/main/java/io/pivotal/CloudNativeSpringUIApplication.java):
+. We'll also have to make a minor change in our ApplicationUI class to consume the new service rather than the CityClient interface. Modify the implementation of the AppUI to reference the CityService rather than the CItyClient:
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
-@FeignClient(value = "cloud-native-spring", fallback = ClientFallback.class)
+public class AppUI extends UI {
+
+    private final CloudNativeSpringUiApplication.CityService _client;
+    private final Grid _grid;
+
+    @Autowired
+    public AppUI(CloudNativeSpringUiApplication.CityService client) {
+        _client = client;
+        _grid = new Grid();
+    }
+
+    @Override
+    protected void init(VaadinRequest request) {
+        setContent(_grid);
+        _grid.setWidth(100, Unit.PERCENTAGE);
+        _grid.setHeight(100, Unit.PERCENTAGE);
+        Collection<City> collection = new ArrayList<City>();
+        _client.getCities().forEach(collection::add);
+        _grid.setContainerDataSource(new BeanItemContainer<City>(City.class, collection));
+    }
+}
 ---------------------------------------------------------------------
 
 == Deploy and test application
