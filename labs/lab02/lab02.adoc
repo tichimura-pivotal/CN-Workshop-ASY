@@ -12,6 +12,7 @@ This application will create a simple reading list by asking for books you have 
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
+package io.pivotal.domain;
 
 @Entity
 @Table(name="city")
@@ -87,6 +88,7 @@ public interface CityRepository extends PagingAndSortingRepository<City, Long> {
 [source,java]
 ---------------------------------------------------------------------
 @SpringBootApplication
+@RestController
 @EnableJpaRepositories // <---- Add this
 @Import(RepositoryRestMvcConfiguration.class) // <---- And this
 public class CloudNativeSpringApplication {
@@ -141,9 +143,10 @@ Date: Thu, 28 Apr 2016 14:44:06 GMT
 Next we'll import some data.
 
 == Importing Data
-== Change the URL below
 
 . Add this https://raw.githubusercontent.com/Pivotal-Field-Engineering/CN-Workshop-TM/master/labs/lab02/import.sql[import.sql file] found in *CN-Workshop-TM/labs/lab02/* to +src/main/resources+. This is a rather large dataset containing all of the postal codes in the United States and its territories. This file will automatically be picked up by Hibernate and imported into the in-memory database.
+
+. Restart the application.
 
 . Access the application again. Notice the appropriate hypermedia is included for +next+, +previous+, and +self+. You can also select pages and page size by utilizing +?size=n&page=n+ on the URL string. Finally, you can sort the data utilizing +?sort=fieldName+.
 +
