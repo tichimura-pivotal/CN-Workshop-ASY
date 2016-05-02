@@ -116,13 +116,6 @@ $ mvn clean spring-boot:run
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ curl "http://localhost:8080/cities"
----------------------------------------------------------------------
-+
-So what have you done? Created four small classes and one build file, resulting in a fully-functional REST microservice. The application's +DataSource+ is created automatically by Spring Boot using the in-memory database because no other +DataSource+ was detected in the project.
-+
-[source,bash]
----------------------------------------------------------------------
 $ curl -i http://localhost:8080/cities
 HTTP/1.1 200 OK
 Server: Apache-Coyote/1.1
@@ -152,6 +145,8 @@ Date: Thu, 28 Apr 2016 14:44:06 GMT
 ---------------------------------------------------------------------
 
 +
+So what have you done? Created four small classes and one build file, resulting in a fully-functional REST microservice. The application's +DataSource+ is created automatically by Spring Boot using the in-memory database because no other +DataSource+ was detected in the project.
+
 Next we'll import some data.
 
 == Importing Data
