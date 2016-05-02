@@ -16,7 +16,10 @@ Spring Boot includes a number of additional features to help you monitor and man
 
 . Run the updated application
 +
+[source,bash]
+---------------------------------------------------------------------
 $ mvn clean spring-boot:run
+---------------------------------------------------------------------
 +
 Try out the following endpoints. The output is omitted here because it can be quite large:
 +
