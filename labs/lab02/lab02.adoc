@@ -153,8 +153,13 @@ Next we'll import some data.
 . Add this https://raw.githubusercontent.com/Pivotal-Field-Engineering/CN-Workshop-TM/master/labs/lab02/import.sql[import.sql file] found in *CN-Workshop-TM/labs/lab02/* to +src/main/resources+. This is a rather large dataset containing all of the postal codes in the United States and its territories. This file will automatically be picked up by Hibernate and imported into the in-memory database.
 
 . Restart the application.
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean spring-boot:run
+---------------------------------------------------------------------
 
-. Access the application again. Notice the appropriate hypermedia is included for +next+, +previous+, and +self+. You can also select pages and page size by utilizing +?size=n&page=n+ on the URL string. Finally, you can sort the data utilizing +?sort=fieldName+.
+. Access the application again. Notice the appropriate hypermedia is included for +next+, +previous+, and +self+. You can also select pages and page size by utilizing +?size=n&page=n+ on the URL string. Finally, you can sort the data utilizing +?sort=fieldName+ (replace fieldName with a cities attribute).
 +
 [source,bash]
 ---------------------------------------------------------------------
@@ -246,6 +251,11 @@ Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
 ---------------------------------------------------------------------
 
 . Run the application
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean spring-boot:run
+---------------------------------------------------------------------
 
 . Access the application again. Notice that hypermedia for a new +search+ endpoint has appeared.
 +
