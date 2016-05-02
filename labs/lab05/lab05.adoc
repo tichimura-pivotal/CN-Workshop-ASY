@@ -190,7 +190,6 @@ We'll also be using the Domain object from our main Boot application.  Add that 
 [source,java,numbered]
 ---------------------------------------------------------------------
   @FeignClient("https://cloud-native-spring")
-  @Component
 	public interface CityClient {
 
 		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
