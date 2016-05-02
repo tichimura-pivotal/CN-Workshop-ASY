@@ -11,7 +11,7 @@
 Group:: +io.pivotal+
 Artifact:: +cloud-native-spring+
 
-. In the dependencies section, add the following:
+. In the dependencies section, add the following manually:
 +
 *Web* *Rest Repositories* *JPA* *H2* *Actuator*
 
@@ -128,7 +128,7 @@ $ mvn clean package
 +
 $ touch manifest.yml
 
-. Add application metadata
+. Add application metadata, using a text editor (of choice)
 +
 [source, bash]
 ---------------------------------------------------------------------
