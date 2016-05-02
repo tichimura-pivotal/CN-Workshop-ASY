@@ -66,7 +66,7 @@ $ cf push -f manifest.yml
 
 . Test your application by navigating to the root URL of the application.  If the dependent cities REST service is still stopped, you should simply see a blank table.  Remember that last time you received a nasty exception in the browser?  Now your Circuit Breaker fallback method is automatically called and the fallback behavior is executed.
 +
-image::images/ui.jpg[]
+image::images/empty.jpg[]
 
 . From a commandline start the cloud-native-spring microservice (the original city service, not the new UI)
 +
@@ -76,3 +76,5 @@ $ cf start cloud-native-spring
 ---------------------------------------------------------------------
 
 . Refresh the UI app and you should once again see a table listing the first page of cities.
++
+image::../lob05/images/ui.jpg[]
