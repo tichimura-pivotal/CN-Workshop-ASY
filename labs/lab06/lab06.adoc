@@ -77,4 +77,4 @@ $ cf start cloud-native-spring
 
 . Refresh the UI app and you should once again see a table listing the first page of cities.
 +
-image::../lob05/images/ui.jpg[]
+image::../lab05/images/ui.jpg[]
