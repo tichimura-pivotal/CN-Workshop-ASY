@@ -109,3 +109,32 @@ $ cf start cloud-native-spring
 . Refresh the UI app and you should once again see a table listing the first page of cities.
 +
 image::../lab05/images/ui.jpg[]
+
+== Connect the Application to a Circuit Breaker Dashboard
+
+.  When we modified our application to use a Hystrix Circuit Breaker our application automatically begins streaming out metrics about the health of our methods wrapped with a HystrixCommand.  We can stream these events through a AMQP message bus into Turbine to view on a Circuit Breaker dashboard.  This can be done through cloudfoundry using the services marketplace by executing the following command:
++
+[source,bash]
+---------------------------------------------------------------------
+$ cf create-service p-circuit-breaker-dashboard standard circuit-breaker-dashboard
+---------------------------------------------------------------------
+
+. If we view the Circuit Breaker Dashboard (accessible from the _manage_ link in Apps Manager) you will see that a dashboard has been deployed but is empty (You may get an _initializing_ message for a few seconds.  This should eventually refresh to a dashboard):
++
+image::images/dash.jpg[]
+
+. We will now bind our application to our circuit-breaker-dashboard within our Cloudfoundry deployment manifest.  Add these additional reference to a the service to the bottom of */cloud-native-spring-ui/manifest.yml* in the services list:
++
+[source, yml]
+---------------------------------------------------------------------
+  services:
+  - service-registry
+  - circuit-breaker-dashboard
+---------------------------------------------------------------------
+
+. Push application into Cloud Foundry
++
+[source,bash]
+---------------------------------------------------------------------
+$ cf push -f manifest.yml
+---------------------------------------------------------------------
