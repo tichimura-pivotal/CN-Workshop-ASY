@@ -138,3 +138,7 @@ image::images/dash.jpg[]
 ---------------------------------------------------------------------
 $ cf push -f manifest.yml
 ---------------------------------------------------------------------
+
+. Refresh your UI application to force some traffic though the circuit breaker call path.  After doing this you should now see the dashboard populated with metrics about the health of your Hystrix circuit breaker:
++
+image::images/dash1.jpg[]
