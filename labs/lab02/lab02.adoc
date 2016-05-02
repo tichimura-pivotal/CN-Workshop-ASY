@@ -78,10 +78,14 @@ Notice that we're using JPA annotations on the class and its fields. You'll need
 +
 [source,java]
 ---------------------------------------------------------------------
+package io.pivotal.repositories;
+
 @RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
 public interface CityRepository extends PagingAndSortingRepository<City, Long> {
 }
 ---------------------------------------------------------------------
+
+You’ll need to use your IDE’s features to add the appropriate import statements.
 
 . Add JPA and REST Repository support to the +io.pivotal.CloudNativeSpringApplication+ Spring Boot Application class.
 +
@@ -106,6 +110,12 @@ public class CloudNativeSpringApplication {
 $ mvn clean spring-boot:run
 
 . Access the application using +curl+ or your web browser using the newly added REST repository endpoint at http://localhost:8080/cities. You'll see that the primary endpoint automatically exposes the ability to page, size, and sort the response JSON.
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean package
+---------------------------------------------------------------------
+$ curl "http://localhost:8080/cities"
 +
 So what have you done? Created four small classes and one build file, resulting in a fully-functional REST microservice. The application's +DataSource+ is created automatically by Spring Boot using the in-memory database because no other +DataSource+ was detected in the project.
 +
