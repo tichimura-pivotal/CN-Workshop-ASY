@@ -189,7 +189,7 @@ We'll also be using the Domain object from our main Boot application.  Add that 
 +
 [source,java,numbered]
 ---------------------------------------------------------------------
-  @FeignClient("cloud-native-spring")
+  @FeignClient("https://cloud-native-spring")
   @Component
 	public interface CityClient {
 
