@@ -117,6 +117,13 @@ applications:
 $ mvn clean package
 ---------------------------------------------------------------------
 
+. For the 2nd half of this lab we'll need to have this maven artifact in our local repository, so install it with the following command:
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn install
+---------------------------------------------------------------------
+
 . Push application into Cloud Foundry
 +
 [source,bash]
