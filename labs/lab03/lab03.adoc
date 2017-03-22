@@ -14,6 +14,14 @@ Spring Boot includes a number of additional features to help you monitor and man
 </dependency>
 ---------------------------------------------------------------------
 
+. By default Spring Boot will use Spring Security to protect these management endpoints (which is a good thing!).  Though you wouldn't want to disable this in production, we'll do so in this sample app to make demonstration a bit easier and simpler.  . Add the following properties to *cloud-native-spring/src/main/resources/application.yml*. You must create the file first.
++
+[source, yaml]
+---------------------------------------------------------------------
+endpoints: # add this section
+  sensitive: false
+---------------------------------------------------------------------
+
 . Run the updated application
 +
 [source,bash]
@@ -63,7 +71,7 @@ Spring Boot provides an endpoint (http://localhost:8080/info) that allows the ex
 
 One thing that _actuator_ does well is expose information about the specific build and version control coordinates for a given deployment.
 
-. Edit the following file: */cloud-native-spring/pom.xml*. Add the _git-commit-id-plugin_ to your Maven build. You must edit the file. The _git-commit-id-plugin_ adds Git branch and commit coordinates to the */info* endpoint:
+. Edit the following file: */cloud-native-spring/pom.xml*. Add the _git-commit-id-plugin_ to your Maven build. You must edit the file and add the plugin code below into the existing _<plugins>_ XML structure, which should already have one plugin defined. The _git-commit-id-plugin_ adds Git branch and commit coordinates to the */info* endpoint:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -205,19 +213,6 @@ These will add the project’s Maven coordinates to the /info endpoint. The Spri
 +
 *NOTE:* if STS reports a problem with the application.yml due to @ character the problem can safely be ignored.
 
-. Edit the following file: */cloud-native-spring/pom.xml*. Add the following configuration to the _spring-boot-maven-plugin_ in your Maven build:
-+
-[source, xml]
----------------------------------------------------------------------
-<plugin>
-	<groupId>org.springframework.boot</groupId>
-	<artifactId>spring-boot-maven-plugin</artifactId>
-	<configuration>
-		<addResources>false</addResources>
-	</configuration>
-</plugin>
----------------------------------------------------------------------
-
 . Build and run the cloud-native-spring application:
 +
 [source,bash]
@@ -230,11 +225,11 @@ $ mvn clean spring-boot:run
 [source,json]
 ---------------------------------------------------------------------
 {
-"build": {
-    "artifact": "data-jpa-spring-boot",
-    "name": "data-jpa-spring-boot",
-    "description": "Hello Spring Boot Actuator",
-    "version": "0.0.0-SNAPSHOT"
+ "build": {
+    "artifact": "cloud-native-spring",
+    "name": "cloud-native-spring",
+    "description": "Demo project for Spring Boot",
+    "version": "0.0.1-SNAPSHOT"
  },
  "git":{
     "branch": "master",
@@ -267,13 +262,13 @@ Normally, when Spring Security is not enabled, the /health endpoint will only ex
 }
 ---------------------------------------------------------------------
 
-. To simplify working with the endpoint for this lab, we will turn off its sensitivity. Add the following to */cloud-native-spring/src/main/resources/application.yml*:
+. To simplify working with the endpoint for this lab, we will turn off additional security for the health endpoint. Add the following to */cloud-native-spring/src/main/resources/application.yml*:
 +
 [source, yaml]
 ---------------------------------------------------------------------
-endpoints:
-  health:
-    sensitive: false
+management:
+  security:
+    enabled: false
 ---------------------------------------------------------------------
 
 . Build and run the cloud-native-spring application:
@@ -409,10 +404,61 @@ Spring Boot provides an endpoint http://localhost:8080/metrics that exposes seve
 $ mvn clean package
 ---------------------------------------------------------------------
 
+. When running a Spring Boot application on Pivotal Cloud Foundry with the actuator endpoints enabled, you can visualize actuator management information on the Applications Manager app dashboard.  To enable this there are a few properties we need to add.  Add the following to */cloud-native-spring/src/main/resources/application.yml*:
++
+[source, yaml]
+---------------------------------------------------------------------
+management:
+  security:
+    enabled: false
+  info:
+    git:
+      mode: full
+  cloudfoundry:
+    enabled: true
+    skip-ssl-validation: true
+---------------------------------------------------------------------
+
+. In order to add full build information to you artifact that is pushed to cloudfoundry, update */cloud-native-spring/pom.xml* and add the following execution to the spring-boot-maven-plugin:
++
+[source, xml]
+---------------------------------------------------------------------
+<executions>
+  <execution>
+	  <goals>
+		  <goal>build-info</goal>
+		</goals>
+	</execution>
+</executions>
+---------------------------------------------------------------------
++
+The full plugin config should look like the following:
++
+[source, xml]
+---------------------------------------------------------------------
+<plugin>
+	<groupId>org.springframework.boot</groupId>
+	<artifactId>spring-boot-maven-plugin</artifactId>
+	<executions>
+		<execution>
+			<goals>
+			  <goal>build-info</goal>
+		  </goals>
+	  </execution>
+  </executions>
+</plugin>
+---------------------------------------------------------------------
+
 . Push application into Cloud Foundry
 +
 $ cf push -f manifest.yml
 
-. Find the URL created for your app in the health status report. Browse to your app.
+. Find the URL created for your app in the health status report. Browse to your app.  Also view your application details in the Apps Mananger UI:
++
+image::images/appsman.jpg[]
+
+. From this UI you can also dynamically change logging levels:
++
+image::images/logging.jpg[]
 
 *Congratulations!* You’ve just learned how to add health and metrics to any Spring Boot application.

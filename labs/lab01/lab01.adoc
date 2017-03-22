@@ -4,7 +4,7 @@
 
 . Browse to https://start.spring.io
 
-. Generate a Maven Project with Spring Boot 1.2.8.
+. Generate a Maven Project with Spring Boot 1.5.2.
 
 . Fill out the *Project metadata* fields as follows:
 +
