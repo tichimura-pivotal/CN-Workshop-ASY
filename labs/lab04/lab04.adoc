@@ -11,11 +11,11 @@ In this lab we'll utilize Spring Boot and Spring Cloud to configure our applicat
 <dependency>
   <groupId>io.pivotal.spring.cloud</groupId>
 	<artifactId>spring-cloud-services-starter-config-client</artifactId>
-	<version>1.0.1.RELEASE</version>
+  <version>1.4.1.RELEASE</version>
 </dependency>
 ---------------------------------------------------------------------
 
-. Add an @Value annotation, private field, and associated usage to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeApplication.java):
+. Add an @Value annotation, private field, and associated usage to the class _io.pivotal.CloudNativeSpringApplication_ (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java):
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
@@ -70,10 +70,6 @@ public class CloudNativeSpringApplication {
 security:
   basic:
     enabled:  false
-
-management:
-  security:
-    enabled: false
 ---------------------------------------------------------------------
 
 . We'll also want to give our Spring Boot App a name so that it can lookup application-specific configuration from the config server later.  Add the following configuration to */cloud-native-spring/src/main/resources/application.yml*:
@@ -93,24 +89,28 @@ spring:
   application:
     name: cloud-native-spring
 
-info:
+endpoints: # add this section
+  sensitive: false
+
+info: # add this section
   build:
     artifact: @project.artifactId@
     name: @project.name@
     description: @project.description@
     version: @project.version@
 
-endpoints:
-  health:
-    sensitive: false
-
-security:
-  basic:
-    enabled:  false
-
 management:
   security:
     enabled: false
+  info:
+    git:
+      mode: full
+  cloudfoundry:
+    enabled: true
+    skip-ssl-validation: true
+
+security:
+  basic:
 ---------------------------------------------------------------------
 
 == Run the _cloud-native-spring_ Application and verify dynamic config is working
@@ -136,20 +136,27 @@ image::images/config-scs.jpg[]
 +
 image::images/config-scs1.jpg[]
 
-. After we create the service instance you'll be redirected to _Space_ landing page that lists your apps and services.  We'll need to configure it to be back to a git repository.  Select the manage link listed below your newly created config-server.  You may be prompted to login again.  In the resulting configuration screen enter the following property value and click submit:
+. After we create the service instance you'll be redirected to your _Space_ landing page that lists your apps and services.  The config server is deployed on-demand and will take a few moments to deploy.  Once the messsage _The Service Instance is Initializing_ disappears click on the service you provisioned.  Select the manage link towards the top of the resulting screen to view the instance id and a JSON document with a single element, count, which validates that the instance provisioned correctly:
 +
 image::images/config-scs2.jpg[]
+
+. We now need to update the service instance with our GIT repository information.  Using the cloudfoundry CLI execute the following update service command:
 +
-Git URI: https://github.com/azwickey-pivotal/config-repo
+[source,bash]
+---------------------------------------------------------------------
+$ cf update-service config-server -c '{"git": { "uri": "https://github.com/azwickey-pivotal/config-repo" } }'
+---------------------------------------------------------------------
+
+. Refresh you Config Server management page and you will see the following message.  Wait until the screen refreshes and the service is reintialized:
 +
-** Leave all the others blank **
+image::images/config-scs3.jpg[]
 
 . We will now bind our application to our config-server within our Cloudfoundry deployment manifest.  Add these 2 entries to the bottom of */cloud-native-spring/manifest.yml*
 +
 [source, yml]
 ---------------------------------------------------------------------
   env:
-    CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+    TRUST_CERTS: api.cfpoc2.internal.t-mobile.com
   services:
   - config-server
 ---------------------------------------------------------------------
@@ -168,7 +175,7 @@ applications:
   buildpack: java_buildpack_offline
   timeout: 180
   env:
-    CF_TARGET: https://api.cfpoc2.internal.t-mobile.com
+    TRUST_CERTS: https://api.cfpoc2.internal.t-mobile.com
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   services:
   - config-server
