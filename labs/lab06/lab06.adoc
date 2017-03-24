@@ -45,7 +45,7 @@ public class CloudNativeSpringUiApplication {
 ---------------------------------------------------------------------
 @FeignClient(name = "cloud-native-spring", fallback = CityClientFallback.class)
 public interface CityClient {
----------------------------------------------------------------
+---------------------------------------------------------------------
 +
 . Your Boot Application should now look like this _CloudNativeSpringUiApplication_:
 +
