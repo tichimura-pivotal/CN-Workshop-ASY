@@ -419,7 +419,7 @@ management:
     skip-ssl-validation: true
 ---------------------------------------------------------------------
 
-. In order to add full build information to you artifact that is pushed to cloudfoundry, update */cloud-native-spring/pom.xml* and add the following execution to the spring-boot-maven-plugin:
+. In order to add full build information to you artifact that is pushed to cloudfoundry, update */cloud-native-spring/pom.xml* and add the following execution and classifier to the spring-boot-maven-plugin:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -430,6 +430,9 @@ management:
 		</goals>
 	</execution>
 </executions>
+<configuration>
+	<classifier>exec</classifier>
+</configuration>
 ---------------------------------------------------------------------
 +
 The full plugin config should look like the following:
@@ -452,6 +455,22 @@ The full plugin config should look like the following:
 </plugin>
 ---------------------------------------------------------------------
 
+. By specifying a classifier we actually just produced 2 jars, one that is executable and one that can be used as an artifact that could be included in other apps (such as our Client UI app we'll create later).  Because of this we need to chance the name of the jar we included in our manifest.yml file.  Change the jar in the path property to *./target/cloud-native-spring-0.0.1-SNAPSHOT-exec.jar*:
++
+[source, yaml]
+---------------------------------------------------------------------
+---
+applications:
+- name: cloud-native-spring
+  host: cloud-native-spring
+  memory: 512M
+  instances: 1
+  path: ./target/cloud-native-spring-0.0.1-SNAPSHOT-exec.jar
+  buildpack: java_buildpack_offline
+  timeout: 180 # to give time for the data to import
+  env:
+    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
+---------------------------------------------------------------------
 . Push application into Cloud Foundry
 +
 $ cf push -f manifest.yml
