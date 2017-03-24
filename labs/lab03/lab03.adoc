@@ -446,6 +446,9 @@ The full plugin config should look like the following:
 		  </goals>
 	  </execution>
   </executions>
+	<configuration>
+	  <classifier>exec</classifier>
+  </configuration>
 </plugin>
 ---------------------------------------------------------------------
 
