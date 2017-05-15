@@ -1,10 +1,11 @@
-= Enhancing Boot Application with Metrics
+= メトリクスを利用したSpring Bootアプリケーションの拡張
 
-== Set up the Actuator
+== Spring Actuatorの設定
 
-Spring Boot includes a number of additional features to help you monitor and manage your application when it’s pushed to production. These features are added by adding _spring-boot-starter-actuator_ to the classpath.  During our initial project setup with *start.spring.io* we've already included that.
+Spring Bootには、アプリケーションのモニタリングと管理に有効な機能があり、特にActuatorにより本番環境での利用想定される。
+Actuatorは  _spring-boot-starter-actuator_ をクラスパスに設定することで利用可能。ここではプロジェクトセットアップ時に *start.spring.io* にて設定済みのため、確認のみ行う。
 
-. Verify the Spring Boot Actuator dependency the following file: */cloud-native-spring/pom.xml*.  You should see the following dependency in the list:
+. pom.xmlにて"dependncy"にてActuatorが設定されているかを確認: */cloud-native-spring/pom.xml*.  下記の内容が確認できるはず(プロジェクト作成時に自動生成されている）:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -14,7 +15,7 @@ Spring Boot includes a number of additional features to help you monitor and man
 </dependency>
 ---------------------------------------------------------------------
 
-. By default Spring Boot will use Spring Security to protect these management endpoints (which is a good thing!).  Though you wouldn't want to disable this in production, we'll do so in this sample app to make demonstration a bit easier and simpler.  . Add the following properties to *cloud-native-spring/src/main/resources/application.yml*. You must create the file first.
+. デフォルトではSpring Bootは、Spring Securityを設定し、エンドポイントへのアクセスを制御している。本番では考えにくいが、今回は検証のため、この機能自体をdisableにしておく。設定自体は *cloud-native-spring/src/main/resources/application.yml* というファイルを作成して下記内容を記入する。
 +
 [source, yaml]
 ---------------------------------------------------------------------
@@ -22,56 +23,140 @@ endpoints: # add this section
   sensitive: false
 ---------------------------------------------------------------------
 
-. Run the updated application
+```
+{
+  "status" : "UP"
+}
+```
+
+"management.security.enabled: false"を加えて実施
++
+[source, yaml]
+---------------------------------------------------------------------
+endpoints: # add this section
+  sensitive: false
+management.security.enabled: false
+---------------------------------------------------------------------
+
+```
+{
+  "status" : "UP",
+  "diskSpace" : {
+    "status" : "UP",
+    "total" : 498937626624,
+    "free" : 30943432704,
+    "threshold" : 10485760
+  },
+  "db" : {
+    "status" : "UP",
+    "database" : "H2",
+    "hello" : 1
+  }
+}
+```
++
+[source, yaml]
+---------------------------------------------------------------------
+endpoints: # add this section
+  sensitive: true
+---------------------------------------------------------------------
+
+これをtrueにしていると以下のエラーが返ってくる
+
+```
+Whitelabel Error Page
+
+This application has no explicit mapping for /error, so you are seeing this as a fallback.
+
+Fri May 12 19:37:08 JST 2017
+There was an unexpected error (type=Unauthorized, status=401).
+Full authentication is required to access this resource.
+```
++
+console logにはこんな出力
+```
+2017-05-12 19:36:36.684  INFO 71514 --- [nio-8080-exec-1] s.b.a.e.m.MvcEndpointSecurityInterceptor : Full authentication is required to access actuator endpoints. Consider adding Spring Security or set 'management.security.enabled' to false.
+```
++
+以下の内容で変更して実行
++
+[source, yaml]
+---------------------------------------------------------------------
+endpoints: # add this section
+  sensitive: true
+management.security.enabled: false
+---------------------------------------------------------------------
++
+
+```
+{
+  "status" : "UP",
+  "diskSpace" : {
+    "status" : "UP",
+    "total" : 498937626624,
+    "free" : 30984785920,
+    "threshold" : 10485760
+  },
+  "db" : {
+    "status" : "UP",
+    "database" : "H2",
+    "hello" : 1
+  }
+}
+```
+
+
+. 更新したアプリケーションを起動
 +
 [source,bash]
 ---------------------------------------------------------------------
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 +
-Try out the following endpoints. The output is omitted here because it can be quite large:
+以下のエンドポイントの確認
 +
 http://localhost:8080/health
 +
-Displays Application and Datasource health information.  This can be customized based on application functionality, which we'll do later.
+アプリケーションとデータソースの状態表示。カスタマイズは後ほど実施
 +
 http://localhost:8080/beans
 +
-Dumps all of the beans in the Spring context.
+SpringコンテキストにおけるBeanの一覧表示
 +
 http://localhost:8080/autoconfig
 +
-Dumps all of the auto-configuration performed as part of application bootstrapping.
+アプリケーションのbootstrappingにおけるauto-configurationを一覧表示
 +
 http://localhost:8080/configprops
 +
-Displays a collated list of all @ConfigurationProperties.
+@ConfigurationPropertiesのリストを全て表示
 +
 http://localhost:8080/env
 +
-Dumps the application’s shell environment as well as all Java system properties.
+Java System propertiesと同様にシェル環境変数を表示
 +
 http://localhost:8080/mappings
 +
-Dumps all URI request mappings and the controller methods to which they are mapped.
+URIリクエストマッピングとコントローラーメソッドの表示
 +
 http://localhost:8080/dump
 +
-Performs a thread dump.
+スレッドダンプの実施
 +
 http://localhost:8080/trace
 +
-Displays trace information (by default the last few HTTP requests).
+エンドポイントのトレースを実施(デフォルトでは終盤のHTTPリクエストのみ)
 
-. Stop the cloud-native-spring application.
+. アプリケーションの停止
 
-== Include Version Control Info
+== バージョン管理情報の挿入
 
-Spring Boot provides an endpoint (http://localhost:8080/info) that allows the exposure of arbitrary metadata. By default, it is empty.
+Spring Bootにおいてはメタデータを定義できるエンドポイントがある (http://localhost:8080/info) 。デフォルトではempty。
 
-One thing that _actuator_ does well is expose information about the specific build and version control coordinates for a given deployment.
+_actuator_ を活用して、特定の環境におけるビルドとバージョン管理情報を提供する。
 
-. Edit the following file: */cloud-native-spring/pom.xml*. Add the _git-commit-id-plugin_ to your Maven build. You must edit the file and add the plugin code below into the existing _<plugins>_ XML structure, which should already have one plugin defined. The _git-commit-id-plugin_ adds Git branch and commit coordinates to the */info* endpoint:
+. ファイルを編集: */cloud-native-spring/pom.xml*. _git-commit-id-plugin_ をMavenビルドに追加。
+ファイルの編集とプラグインコードを _<plugins>_ XML 構成に追加。ここには通常一つのプラグインを定義。 _git-commit-id-plugin_ により Git branch とcommit が */info* エンドポイントにて表示される:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -84,7 +169,7 @@ One thing that _actuator_ does well is expose information about the specific bui
 </plugin>
 ---------------------------------------------------------------------
 +
-*NOTE* The path *../../../.git* refers to the .git directory at the root of the lab materials repo.
+*NOTE*  *../../../.git* パスは、.gitディレクトリとしてlab資料のレポジトリに相当する
 +
 Completed:
 +
@@ -170,34 +255,36 @@ Completed:
 </project>
 ---------------------------------------------------------------------
 
-. Run the _cloud-native-spring_ application:
+.  _cloud-native-spring_ アプリケーションを実行:
 +
 $ mvn clean spring-boot:run
 
-. Browse to http://localhost:8080/info. Git commit information is now included
+. http://localhost:8080/info. を閲覧。Git commitの情報が含まれるのがわかる
 +
 [source,json]
 ---------------------------------------------------------------------
 {
- "git":{
-    "branch": "master",
-    "commit": {
-      "id": "123456",
-      "time": "2016-03-03T12:05:10-0500"
-    }
+  "git" : {
+    "commit" : {
+      "time" : "2017-03-24T16:26:32.000+0000",
+      "id" : "8ab2156"
+    },
+    "branch" : "master"
   }
 }
 ---------------------------------------------------------------------
 
-. Stop the _cloud-native-spring_ application
+. _cloud-native-spring_ アプリケーションを停止
 +
-*What Just Happened?*
+*何が起こっているのか?*
 +
-By including the _git-commit-id-plugin_, details about git commit information will be included in the */info* endpoint. Git information is captured in a _git.properties_ file that is generated with the build. Review the following file: */cloud-native-spring/target/classes/git.properties*
+ _git-commit-id-plugin_ を指定することで、git commitの詳細情報が取得され、 */info* エンドポイントより取得可能となる。
+ この情報は _git.properties_ ファイルに登録される。このファイル自体はビルド時に生成されるもの。
+ このファイルを参照のこと: */cloud-native-spring/target/classes/git.properties*
 
-== Include Build Info
+== ビルド情報の挿入
 
-. Add the following properties to *cloud-native-spring/src/main/resources/application.yml*. You must create the file first.
+. 以下の情報を *cloud-native-spring/src/main/resources/application.yml* に入力。 ファイルがなければ先に作成しておく。（前の作業で作成済み）
 +
 [source, yaml]
 ---------------------------------------------------------------------
@@ -209,51 +296,52 @@ info: # add this section
     version: @project.version@
 ---------------------------------------------------------------------
 +
-These will add the project’s Maven coordinates to the /info endpoint. The Spring Boot Maven plugin will cause them to automatically be replaced in the assembled JAR.
+これらの情報もMavenにより /info エンドポイントに紐付けられる. Spring BootのMaven pluginにより自動的にjarの中に組み込まれる
 +
-*NOTE:* if STS reports a problem with the application.yml due to @ character the problem can safely be ignored.
+*NOTE:* もしSTSが上記application.ymlにおいて、@文字でのエラーを出している場合は無視しても良い
 
-. Build and run the cloud-native-spring application:
+. ビルドと実行:
 +
 [source,bash]
 ---------------------------------------------------------------------
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. Browse to http://localhost:8080/info. Build information is now included.
+. 再度http://localhost:8080/infoを確認. ビルド情報が表示されるかチェック。
 +
 [source,json]
 ---------------------------------------------------------------------
 {
- "build": {
-    "artifact": "cloud-native-spring",
-    "name": "cloud-native-spring",
-    "description": "Demo project for Spring Boot",
-    "version": "0.0.1-SNAPSHOT"
- },
- "git":{
-    "branch": "master",
-    "commit": {
-      "id": "123456",
-      "time": "2016-03-03T12:05:10-0500"
-    }
+  "build" : {
+    "artifact" : "cloud-native-spring",
+    "name" : "cloud-native-spring",
+    "description" : "Demo project for Spring Boot",
+    "version" : "0.0.1-SNAPSHOT"
+  },
+  "git" : {
+    "commit" : {
+      "time" : "2017-03-24T16:26:32.000+0000",
+      "id" : "8ab2156"
+    },
+    "branch" : "master"
   }
 }
 ---------------------------------------------------------------------
 
-. Stop the cloud-native-spring application.
+. アプリケーションを停止:
 +
-*What Just Happened?*
+*何が行われたか?*
 +
-We have mapped Maven properties from the pom.xml into the /info endpoint.
+pom.xmlにあるMavenプロパティを/infoエンドポイントと紐付けた
+
 +
-Read more about exposing data in the /info endpoint link:http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[here]
+/infoエンドポイントに関するより詳細はこちら。 link:http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[here]
 
-== Health Indicators
+== 状態表示項目
 
-Spring Boot provides an endpoint http://localhost:8080/health that exposes various health indicators that describe the health of the given application.
+Spring Bootにおいて http://localhost:8080/health エンドポイントにて、様々な状態表示項目がアプリケーションに関連して提供される
 
-Normally, when Spring Security is not enabled, the /health endpoint will only expose an UP or DOWN value.
+通常ではSpring Securityは有効になっていないので,  /health エンドポイントは単にUPあるいはDOWNを表示する
 
 [source,json]
 ---------------------------------------------------------------------
@@ -262,7 +350,7 @@ Normally, when Spring Security is not enabled, the /health endpoint will only ex
 }
 ---------------------------------------------------------------------
 
-. To simplify working with the endpoint for this lab, we will turn off additional security for the health endpoint. Add the following to */cloud-native-spring/src/main/resources/application.yml*:
+. ここでの検証のためには、追加で以下のセキュリティ設定を無効化しておく。そのために下記内容を登録する */cloud-native-spring/src/main/resources/application.yml*:
 +
 [source, yaml]
 ---------------------------------------------------------------------
@@ -271,14 +359,16 @@ management:
     enabled: false
 ---------------------------------------------------------------------
 
-. Build and run the cloud-native-spring application:
+. ビルドと実行
 +
 [source,bash]
 ---------------------------------------------------------------------
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. Browse to http://localhost:8080/health. Out of the box is a _DiskSpaceHealthIndicator_ that monitors health in terms of available disk space. Would your Ops team like to know if the app is close to running out of disk space? DiskSpaceHealthIndicator can be customized via _DiskSpaceHealthIndicatorProperties_. For instance, setting a different threshold for when to report the status as DOWN.
+. http://localhost:8080/healthを確認. 設定の必要もなく _DiskSpaceHealthIndicator_ が表示される。これはディスクスペースの空き状況を表示する。
+アプリケーションがディスクスペース不足に近いかどうかを確認したい場合、このDiskSpaceHealthIndicatorは _DiskSpaceHealthIndicatorProperties_　経由でカスタマイズ可能。
+異なる閾値を設定することで、その条件においてステータスをDOWNとさせることが可能
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -292,9 +382,9 @@ $ mvn clean spring-boot:run
 }
 ---------------------------------------------------------------------
 
-. Stop the cloud-native-spring application.
+. アプリを停止
 
-. Create the class _io.pivotal.FlappingHealthIndicator_ (/cloud-native-spring/src/main/java/io/pivotal/FlappingHealthIndicator.java) and into it paste the following code:
+.  _io.pivotal.FlappingHealthIndicator_ クラスを作成(/cloud-native-spring/src/main/java/io/pivotal/FlappingHealthIndicator.java) and into it paste the following code:
 +
 [source,java]
 ---------------------------------------------------------------------
@@ -323,88 +413,101 @@ public class FlappingHealthIndicator implements HealthIndicator {
 }
 ---------------------------------------------------------------------
 +
-This demo health indicator will randomize the health check.
+これにより状態表示項目がランダムに実行されることになる
 
-. Build and run the _cloud-native-spring_ application:
+. ビルドと実行
 +
 [source,bash]
 ---------------------------------------------------------------------
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. Browse to http://localhost:8080/health and verify that the output is similar to the following (and changes randomly!).
+. http://localhost:8080/health を確認して、出力が以下と同じようになるか確認 (かつランダムに変わることも）
 +
 [source,json]
 ---------------------------------------------------------------------
 {
-  "status": "UP",
-  "flapping": {
-      "status": "UP",
-      "flapper": "ok",
-      "random": 42
+  "status" : "DOWN",
+  "flapping" : {
+    "status" : "DOWN",
+    "flapper" : "failure",
+    "random" : 4
   },
-  "diskSpace": {
-      "status": "UP",
-      "free": 42345678945,
-      "threshold": 12345678
+  "diskSpace" : {
+    "status" : "UP",
+    "total" : 498937626624,
+    "free" : 30927851520,
+    "threshold" : 10485760
+  },
+  "db" : {
+    "status" : "UP",
+    "database" : "H2",
+    "hello" : 1
   }
 }
 ---------------------------------------------------------------------
 
-== Metrics
+== メトリックス
 
-Spring Boot provides an endpoint http://localhost:8080/metrics that exposes several automatically collected metrics for your application. It also allows for the creation of custom metrics.
+ http://localhost:8080/metrics エンドポイントにて、自動的に収集されるメトリクスが取得可能。さらにカスタムメトリクスも取得可能
 
-. Browse to http://localhost:8080/metrics. Review the metrics exposed.
+. http://localhost:8080/metrics　を参照してどのようなメトリクスが取得できるか確認
 +
 [source,json]
 ---------------------------------------------------------------------
 {
-"mem": 418830,
-"mem.free": 239376,
-"processors": 8,
-"instance.uptime": 59563,
-"uptime": 69462,
-"systemload.average": 1.5703125,
-"heap.committed": 341504,
-"heap.init": 262144,
-"heap.used": 102127,
-"heap": 3728384,
-"nonheap.committed": 79696,
-"nonheap.init": 2496,
-"nonheap.used": 77326,
-"nonheap": 0,
-"threads.peak": 14,
-"threads.daemon": 11,
-"threads.totalStarted": 17,
-"threads": 13,
-"classes": 9825,
-"classes.loaded": 9825,
-"classes.unloaded": 0,
-"gc.ps_scavenge.count": 9,
-"gc.ps_scavenge.time": 80,
-"gc.ps_marksweep.count": 2,
-"gc.ps_marksweep.time": 157,
-"httpsessions.max": -1,
-"httpsessions.active": 0,
-"gauge.response.metrics": 75,
-"gauge.response.star-star.favicon.ico": 9,
-"counter.status.200.star-star.favicon.ico": 1,
-"counter.status.200.metrics": 1
+  "mem" : 756053,
+  "mem.free" : 377787,
+  "processors" : 8,
+  "instance.uptime" : 9273443,
+  "uptime" : 422453,
+  "systemload.average" : 1.5732421875,
+  "heap.committed" : 654336,
+  "heap.init" : 262144,
+  "heap.used" : 276548,
+  "heap" : 3728384,
+  "nonheap.committed" : 104960,
+  "nonheap.init" : 2496,
+  "nonheap.used" : 101717,
+  "nonheap" : 0,
+  "threads.peak" : 27,
+  "threads.daemon" : 21,
+  "threads.totalStarted" : 32,
+  "threads" : 23,
+  "classes" : 13671,
+  "classes.loaded" : 13672,
+  "classes.unloaded" : 1,
+  "gc.ps_scavenge.count" : 11,
+  "gc.ps_scavenge.time" : 157,
+  "gc.ps_marksweep.count" : 3,
+  "gc.ps_marksweep.time" : 385,
+  "httpsessions.max" : -1,
+  "httpsessions.active" : 0,
+  "datasource.primary.active" : 0,
+  "datasource.primary.usage" : 0.0,
+  "gauge.response.health" : 2.0,
+  "gauge.response.metrics" : 9.0,
+  "gauge.response.info" : 22.0,
+  "gauge.response.star-star.favicon.ico" : 9.0,
+  "counter.status.200.star-star.favicon.ico" : 1,
+  "counter.status.200.info" : 1,
+  "counter.status.200.metrics" : 1,
+  "counter.status.503.health" : 2
 }
 ---------------------------------------------------------------------
 
-. Stop the cloud-native-spring application.
+. 停止.
 
-== Deploy _cloud-native-spring_ to Pivotal Cloud Foundry
-. Build the application
+==  _cloud-native-spring_ をPivotal Cloud Foundryに展開
+. ビルド
 +
 [source,bash]
 ---------------------------------------------------------------------
 $ mvn clean package
 ---------------------------------------------------------------------
 
-. When running a Spring Boot application on Pivotal Cloud Foundry with the actuator endpoints enabled, you can visualize actuator management information on the Applications Manager app dashboard.  To enable this there are a few properties we need to add.  Add the following to */cloud-native-spring/src/main/resources/application.yml*:
+. Actuatorを搭載したSpring Bootを利用してPCF上に展開, より視覚的な確認が可能に
+  もしきちんと確認して、application.ymlを操作。
 +
 [source, yaml]
 ---------------------------------------------------------------------
@@ -419,7 +522,8 @@ management:
     skip-ssl-validation: true
 ---------------------------------------------------------------------
 
-. In order to add full build information to you artifact that is pushed to cloudfoundry, update */cloud-native-spring/pom.xml* and add the following execution and classifier to the spring-boot-maven-plugin:
+. ビルドの情報を追加する。ビルド情報を成果物に対して追加するには、*/cloud-native-spring/pom.xml*
+を編集する
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -435,7 +539,7 @@ management:
 </configuration>
 ---------------------------------------------------------------------
 +
-The full plugin config should look like the following:
+プラグイン構成の編集(pom.xml)
 +
 [source, xml]
 ---------------------------------------------------------------------

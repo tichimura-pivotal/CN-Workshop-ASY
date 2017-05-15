@@ -1,0 +1,27 @@
+spring:
+  application:
+    name: cloud-native-spring
+
+endpoints: # add this section
+  sensitive: false
+
+info: # add this section
+  build:
+    artifact: @project.artifactId@
+    name: @project.name@
+    description: @project.description@
+    version: @project.version@
+
+management:
+  security:
+    enabled: false
+  info:
+    git:
+      mode: full
+  cloudfoundry:
+    enabled: true
+    skip-ssl-validation: true
+
+security:
+  basic:
+    enabled:  false

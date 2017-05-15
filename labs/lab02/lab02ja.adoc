@@ -1,0 +1,405 @@
+:compat-mode:
+= パーシステンスの追加
+
+Spring Boot, Spring Data, and Spring Data RESTを使ってhypermedia-driven RESTful Webサービスを実現. その後PCFにデプロイ
+
+== Hypermedia-Driven RESTful Web サービスとSpring Data REST (using JPA)の利用
+
+```
+```
+
+このアプリケーションは読んだ本のリスト表示とリレーショナルレポジトリへの保存を実施. Lab01で作ったSpring Bootアプリケーションを引き続き利用。まずはドメインモデルを使うために"City"オブジェクトを導入.
+
+== Cityドメインオブジェクトの追加
+. パッケージ名`io.pivotal.domain`としてパッケージを作成。この中で`City`クラスを作成. 下記内容をペーストする。都市を郵便番号、地理情報にて表示
+
++
+[source, java, numbered]
+---------------------------------------------------------------------
+package io.pivotal.domain;
+
+@Entity
+@Table(name="city")
+public class City implements Serializable {
+    private static final long serialVersionUID = 1L;
+
+    @Id
+    @GeneratedValue
+    private long id;
+
+    @Column(nullable = false)
+    private String name;
+
+    @Column(nullable = false)
+    private String county;
+
+    @Column(nullable = false)
+    private String stateCode;
+
+    @Column(nullable = false)
+    private String postalCode;
+
+    @Column
+    private String latitude;
+
+    @Column
+    private String longitude;
+
+    public String getName() { return name; }
+
+    public void setName(String name) { this.name = name; }
+
+    public String getPostalCode() { return postalCode; }
+
+    public void setPostalCode(String postalCode) { this.postalCode = postalCode; }
+
+    public long getId() { return id; }
+
+    public void setId(long id) { this.id = id; }
+
+    public String getStateCode() { return stateCode; }
+
+    public void setStateCode(String stateCode) { this.stateCode = stateCode; }
+
+    public String getCounty() { return county; }
+
+    public void setCounty(String county) { this.county = county; }
+
+    public String getLatitude() { return latitude; }
+
+    public void setLatitude(String latitude) { this.latitude = latitude; }
+
+    public String getLongitude() { return longitude; }
+
+    public void setLongitude(String longitude) { this.longitude = longitude; }
+}
+
+---------------------------------------------------------------------
++
+上記はJPAアノテーションを使っている(javax.persistence)ため、IDEによってはJPAをimportしているかを確認してください
+
+```
+STSを使っている場合は、Mavenプロジェクトを更新する必要があります(Maven > Upate Project > offlineのチェックボックスを外す)
+```
+
+.  +io.pivotal.repositories+ としてパッケージを新規作成し、+CityRepository+ インターフェースを作成してください. 下記のコードを利用して、適切なimportを実施して下さい:
+
++
+[source,java]
+---------------------------------------------------------------------
+package io.pivotal.repositories;
+
+@RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
+public interface CityRepository extends PagingAndSortingRepository<City, Long> {
+}
+---------------------------------------------------------------------
+
+. JPAとREST Repositoryを使って +io.pivotal.CloudNativeSpringApplication+ にSpring Boot アプリケーションを更新します。
+
++
+[source,java]
+---------------------------------------------------------------------
+@SpringBootApplication
+@RestController
+@EnableJpaRepositories // <---- Add this
+@Import(RepositoryRestMvcConfiguration.class) // <---- And this
+public class CloudNativeSpringApplication {
+
+    public static void main(String[] args) {
+        SpringApplication.run(CloudNativeSpringApplication.class, args);
+    }
+}
+---------------------------------------------------------------------
+
+==  _cloud-native-spring_ アプリケーションの実行
+
+. アプリケーションの実行
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean spring-boot:run
+---------------------------------------------------------------------
+
+. +curl+コマンド、あるいはブラウザを使って、今回作成したエンドポイントにアクセス(http://localhost:8080/cities). 自動的にページやサイズ等をJSON形式で表示
+
++
+[source,bash]
+---------------------------------------------------------------------
+$ curl -i http://localhost:8080/cities
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+Content-Type: application/hal+json;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 28 Apr 2016 14:44:06 GMT
+
+{
+  "_embedded" : {
+    "cities" : [ ]
+  },
+  "_links" : {
+    "self" : {
+      "href" : "http://localhost:8080/cities"
+    },
+    "profile" : {
+      "href" : "http://localhost:8080/profile/cities"
+    }
+  },
+  "page" : {
+    "size" : 20,
+    "totalElements" : 0,
+    "totalPages" : 0,
+    "number" : 0
+  }
+}
+---------------------------------------------------------------------
+
+
+ここまでで実行したことは、4つのクラスを作成して、ビルドファイルを編集、結果的にRESTサービスをマイクロサービスとして作成できた
+アプリケーションの+DataSource+ は自動的にSpring Bootで作成されており、この時点ではデータベースが用意されてないため、Javaで標準的に実装しているインメモリデータベースを使ってデータ投入をしている
+
+つぎにデータのインポートを実施
+
+== データのインポート
+
+. https://raw.githubusercontent.com/Pivotal-Field-Engineering/CN-Workshop-TM/master/labs/lab02/import.sql[import.sql] ファイルが *CN-Workshop-LHC/labs/lab02/* にあるので +src/main/resources+. にコピー。USにおける郵便番号を含んでいる. Hibernateによりピックアップされ、インメモリデータベース(H2)にインポートされる
+
+. その後、アプリケーションをリスタートする
+
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean spring-boot:run
+---------------------------------------------------------------------
+
+. 再度アプリケーションにアクセス。ハイパーメディアにnext, previous, selfが含まれているのが確認できる。またページ指定、あるいはページのサイズも指定可能( +?size=n&page=n+ ）。また、データのソートも +?sort=fieldName+ で可能(fieldNameは都市名に置き換える)。
+
++
+[source,bash]
+---------------------------------------------------------------------
+$ curl -i localhost:8080/cities
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 19:59:58 GMT
+
+{
+  "_links" : {
+    "next" : {
+      "href" : "http://localhost:8080/cities?page=1&size=20"
+    },
+    "self" : {
+      "href" : "http://localhost:8080/cities{?page,size,sort}",
+      "templated" : true
+    }
+  },
+  "_embedded" : {
+    "cities" : [ {
+      "name" : "HOLTSVILLE",
+      "county" : "SUFFOLK",
+      "stateCode" : "NY",
+      "postalCode" : "00501",
+      "latitude" : "+40.922326",
+      "longitude" : "-072.637078",
+      "_links" : {
+        "self" : {
+          "href" : "http://localhost:8080/cities/1"
+        }
+      }
+    },
+
+    // ...
+
+    {
+      "name" : "CASTANER",
+      "county" : "LARES",
+      "stateCode" : "PR",
+      "postalCode" : "00631",
+      "latitude" : "+18.269187",
+      "longitude" : "-066.864993",
+      "_links" : {
+        "self" : {
+          "href" : "http://localhost:8080/cities/20"
+        }
+      }
+    } ]
+  },
+  "page" : {
+    "size" : 20,
+    "totalElements" : 42741,
+    "totalPages" : 2138,
+    "number" : 0
+  }
+}
+---------------------------------------------------------------------
+
+. 以下のURLパスにアクセス。どのようにアプリケーションが振る舞うかを確認する。
+
++
+http://localhost:8080/cities?size=5
++
+http://localhost:8080/cities?size=5&page=3
++
+http://localhost:8080/cities?sort=postalCode,desc
+
+次に、検索機能を追加する
+
+== 検索機能の追加
+
+. 検索用のメソッドを +CityRepository+ に追加:
++
+[source,java]
+---------------------------------------------------------------------
+@RestResource(path = "name", rel = "name")
+Page<City> findByNameIgnoreCase(@Param("q") String name, Pageable pageable);
+
+@RestResource(path = "nameContains", rel = "nameContains")
+Page<City> findByNameContainsIgnoreCase(@Param("q") String name, Pageable pageable);
+
+@RestResource(path = "state", rel = "state")
+Page<City> findByStateCodeIgnoreCase(@Param("q") String stateCode, Pageable pageable);
+
+@RestResource(path = "postalCode", rel = "postalCode")
+Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
+---------------------------------------------------------------------
+
+. アプリケーションの起動
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean spring-boot:run
+---------------------------------------------------------------------
+
+. 再度アプリケーションにアクセス。+search+ エンドポイントが見えてくるのが確認できる
++
+[source,bash]
+---------------------------------------------------------------------
+$ curl -i "localhost:8080/cities"
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 20:33:52 GMT
+
+{
+  "_links" : {
+    "next" : {
+      "href" : "http://localhost:8080/cities?page=1&size=20"
+    },
+    "self" : {
+      "href" : "http://localhost:8080/cities{?page,size,sort}",
+      "templated" : true
+    },
+    "search" : {
+      "href" : "http://localhost:8080/cities/search"
+    }
+},
+// (Remainder omitted...)
+---------------------------------------------------------------------
+
+. +search+ エンドポイントにアクセス:
++
+http://localhost:8080/cities/search
++
+[source,bash]
+---------------------------------------------------------------------
+$ curl -i "localhost:8080/cities/search"
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+X-Application-Context: application
+Content-Type: application/hal+json
+Transfer-Encoding: chunked
+Date: Tue, 27 May 2014 20:38:32 GMT
+
+{
+  "_links" : {
+    "postalCode" : {
+      "href" : "http://localhost:8080/cities/search/postalCode{?q,page,size,sort}",
+      "templated" : true
+    },
+    "state" : {
+      "href" : "http://localhost:8080/cities/search/state{?q,page,size,sort}",
+      "templated" : true
+    },
+    "name" : {
+      "href" : "http://localhost:8080/cities/search/name{?q,page,size,sort}",
+      "templated" : true
+    },
+    "nameContains" : {
+      "href" : "http://localhost:8080/cities/search/nameContains{?q,page,size,sort}",
+      "templated" : true
+    }
+  }
+}
+---------------------------------------------------------------------
++
+検索エンドポイントをそれぞれに作成
+
+. 下記のエンドポイントの検証。好きな値に置き換えて試して見てください
++
+http://localhost:8080/cities/search/postalCode?q=75202
++
+http://localhost:8080/cities/search/name?q=Boston
++
+http://localhost:8080/cities/search/nameContains?q=Fort&size=1
+
+== Cloud Foundryへのプッシュ
+
+. アプリケーションのビルド
++
+[source,bash]
+---------------------------------------------------------------------
+$ mvn clean package
+---------------------------------------------------------------------
+
+. 既存のマニフェストを利用して, +manifest.yml+の変更を実施。  タイムアウトのパラメータを設定して、データロードの初期化時間に十分な値に変更:
++
+[source,yml]
+---------------------------------------------------------------------
+---
+applications:
+- name: cloud-native-spring
+  host: cloud-native-spring
+  memory: 512M
+  instances: 1
+  path: ./target/cloud-native-spring-0.0.1-SNAPSHOT.jar
+  buildpack: java_buildpack_offline
+  timeout: 180 # to give time for the data to import
+  env:
+    JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
+---------------------------------------------------------------------
+
+. Cloud Foundry にpush:
++
+[source,bash]
+---------------------------------------------------------------------
+$ cf push
+
+...
+
+1 of 1 instances running
+
+App started
+
+Showing health and status for app cloud-native-spring...
+OK
+
+requested state: started
+instances: 1/1
+usage: 512M x 1 instances
+urls: cloud-native-spring.cf.mycloud.com
+
+     state     since                    cpu    memory         disk
+#0   running   2014-05-27 04:15:05 PM   0.0%   433M of 512M   128.9M of 1G
+---------------------------------------------------------------------
+
+. random routeが設定されているので、設定されたURLにアクセス
++
+[source,bash]
+---------------------------------------------------------------------
+$ curl -i cloud-native-spring.cf.mycloud.com/cities
+---------------------------------------------------------------------
+
+次はLab03で状態表示を学びましょう。
