@@ -2,7 +2,7 @@
 
 == Spring Actuatorの設定
 
-Spring Bootには、アプリケーションのモニタリングと管理に有効な機能があり、特にActuatorは本番環境での利用を想定された優れた機能を提供する。
+Spring Bootには、アプリケーションのモニタリングと管理に有効な機能があり、特にActuatorは本番環境での利用を想定された優れた機能を提供している。
 Actuatorは  _spring-boot-starter-actuator_ をクラスパスに設定することで利用可能。ここではプロジェクトセットアップ時に *start.spring.io* にて設定済みのため、確認のみ行う。
 
 . pom.xmlにて"dependncy"にてActuatorが設定されているかを確認: */cloud-native-spring/pom.xml*.  下記の内容が確認できるはず (プロジェクト作成時に自動生成されている）:
@@ -257,9 +257,11 @@ _actuator_ を活用して、特定の環境におけるビルドとバージョ
 
 .  _cloud-native-spring_ アプリケーションを実行:
 +
+``
 $ mvn clean spring-boot:run
-
-. http://localhost:8080/info. を閲覧。Git commitの情報が含まれるのがわかる
+``
++
+. http://localhost:8080/info を閲覧。Git commitの情報が含まれるのがわかる
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -275,12 +277,17 @@ $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
 . _cloud-native-spring_ アプリケーションを停止
-+
-*何が起こっているのか?*
-+
- _git-commit-id-plugin_ を指定することで、git commitの詳細情報が取得され、 */info* エンドポイントより取得可能となる。
- この情報は _git.properties_ ファイルに登録される。このファイル自体はビルド時に生成されるもの。
- このファイルを参照のこと: */cloud-native-spring/target/classes/git.properties*
+
+[NOTE]
+====
+
+何が起こっているのか?
+
+_git-commit-id-plugin_ を指定することで、git commitの詳細情報が取得され、 */info* エンドポイントより取得可能となる。
+この情報は _git.properties_ ファイルに登録される。このファイル自体はビルド時に生成されるもの。
+*/cloud-native-spring/target/classes/git.properties*を参照の事
+
+====
 
 == ビルド情報の挿入
 
@@ -298,7 +305,7 @@ info: # add this section
 +
 これらの情報もMavenにより /info エンドポイントに紐付けられる. Spring BootのMaven pluginにより自動的にjarの中に組み込まれる
 +
-*NOTE:* もしSTSが上記application.ymlにおいて、@文字でのエラーを出している場合は無視しても良い
+NOTE: もしSTSが上記application.ymlにおいて、@文字でのエラーを出している場合は無視しても良い
 
 . ビルドと実行:
 +
@@ -329,13 +336,15 @@ $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
 . アプリケーションを停止:
-+
-*何が行われたか?*
-+
+
+[NOTE]
+====
+何が行われたか?
+
 pom.xmlにあるMavenプロパティを/infoエンドポイントと紐付けた
 
-+
 /infoエンドポイントに関するより詳細はこちら。 link:http://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready[here]
+====
 
 == 状態表示項目
 
@@ -366,7 +375,9 @@ management:
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. http://localhost:8080/healthを確認. 設定の必要もなく _DiskSpaceHealthIndicator_ が表示される。これはディスクスペースの空き状況を表示する。
+. http://localhost:8080/healthを確認.
++
+設定の必要もなく _DiskSpaceHealthIndicator_ が表示される。これはディスクスペースの空き状況を表示する。
 アプリケーションがディスクスペース不足に近いかどうかを確認したい場合、このDiskSpaceHealthIndicatorは _DiskSpaceHealthIndicatorProperties_　経由でカスタマイズ可能。
 異なる閾値を設定することで、その条件においてステータスをDOWNとさせることが可能
 +
@@ -384,7 +395,9 @@ $ mvn clean spring-boot:run
 
 . アプリを停止
 
-.  _io.pivotal.FlappingHealthIndicator_ クラスを作成(/cloud-native-spring/src/main/java/io/pivotal/FlappingHealthIndicator.java) and into it paste the following code:
+.  _io.pivotal.FlappingHealthIndicator_ クラスを作成(/cloud-native-spring/src/main/java/io/pivotal/FlappingHealthIndicator.java)
++
+下記のコードをコピー
 +
 [source,java]
 ---------------------------------------------------------------------
@@ -449,7 +462,7 @@ $ mvn clean spring-boot:run
 
 == メトリックス
 
- http://localhost:8080/metrics エンドポイントにて、自動的に収集されるメトリクスが取得可能。さらにカスタムメトリクスも取得可能
+NOTE: http://localhost:8080/metrics エンドポイントにて、自動的に収集されるメトリクスが取得可能。さらにカスタムメトリクスも取得可能
 
 . http://localhost:8080/metrics　を参照してどのようなメトリクスが取得できるか確認
 +
@@ -500,7 +513,7 @@ $ mvn clean spring-boot:run
 
 ==  _cloud-native-spring_ をPivotal Cloud Foundryに展開
 
-. Actuatorを搭載したSpring Bootを利用してPCF上に展開すると, より視覚的な確認がApp Managerより可能に。
+. Actuatorを搭載したSpring BootアプリをPCF上に展開すると, より視覚的な確認がApp Managerより可能に。
   そのために必要な、いくつかのプロパティを */cloud-native-spring/src/main/resources/application.yml* に追加する。:
 +
 [source, yaml]
@@ -533,7 +546,7 @@ management:
 </configuration>
 ---------------------------------------------------------------------
 +
-最終的な *pom.xml* の表示
+*pom.xml* の_spring-boot-maven-plugin_のartifactIdに挿入する
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -557,7 +570,7 @@ management:
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean package
+$ ./mvnw clean package
 ---------------------------------------------------------------------
 
 . classifierを指定することで、2つのjarファイルが生成される。一つは実行可能ファイルで、もう一つは生成物として他のアプリに含めることができる（Client UIなどに）。マニフェストファイルにある名称を変更するため、パスに指定している内容を編集する *./target/cloud-native-spring-0.0.1-SNAPSHOT-exec.jar*:
@@ -578,19 +591,21 @@ applications:
 ---------------------------------------------------------------------
 . Cloud Foundryにプッシュ
 +
+``
 $ cf push -f manifest.yml
-
+``
 . アプリケーションのURLにアクセスして、状態表示レポートを確認。またApp Manager UIから詳細を表示:
-```
-App Manager UIにおけるActuatorの利用は、一旦Browserからアプリケーションにアクセスしてからでないと
++
+NOTE: App Manager UIにおけるActuatorの利用は、一旦Browserからアプリケーションにアクセスしてからでないと
 環境によって表示されない場合があります
 https://github.com/pivotal-cf/pcfdev/issues/205
-```
 +
 image::images/appsman.jpg[]
 
++
 . この画面から、logging levelの変更も可能:
 +
+
 image::images/logging.jpg[]
 
 *おめでとうございます!* これで状態表示とメトリクスの追加の仕方を学んで頂きました。

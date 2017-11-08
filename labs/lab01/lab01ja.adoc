@@ -2,29 +2,31 @@
 
 == Create a Spring Boot Project
 
-. https://start.spring.ioに移動
+. https://start.spring.io に移動
 
-. Maven Project としてSpring Boot 1.5.2で作成
+. Maven Project としてSpring Boot 1.5.8で作成
 
 . 下記の内容で*Project metadata*フィールドを埋める:
 +
 Group:: +io.pivotal+
 Artifact:: +cloud-native-spring+
-``
-複数の受講者が同じSpaceを使う場合は、cloud-native-spring -> cloud-native-YOURNAMEなどでも良いです。
-``
+
+NOTE: 複数の受講者が同じSpaceを使う場合は、cloud-native-spring -> cloud-native-YOURNAMEなどでも良いです。
 
 . (Option) "Switch to the full version."をクリックして、"Package Name"をio.pivotalに変更
 
 . "Dependencies" にて、以下をそれぞれ入力（全部をコピペしないように):
 +
-*Web* *Rest Repositories* *JPA* *H2* *Actuator*
+*Web*, *Rest Repositories*, *JPA*, *H2*, *Actuator*
++
+
+image::img/spring-initializr.png[Initializer]
 
 . "Generate Project"ボタンを押すとzipファイルがダウンロードされる
 
 . "Selected Dependencies"で、上記のDependenciesがそれぞれあるのを確認する
 
-. 以下のようにzipファイルを展開 *CN-Workshop-LHC/labs/lab01/cloud-native-spring*
+. 以下のようにzipファイルを展開 *CN-Workshop-INT/labs/lab01/cloud-native-spring*
 
 +
 このようなディレクトリになることを確認:
@@ -39,14 +41,18 @@ CN-Workshop-LHC:
 
 . pom.xmlを使ってeditor/IDEで処理
 +
-*_STSにおけるインポート:_*
+*_STSでのプロジェクト・インポート:_*
 +
-Select File > Import… Then select Maven > Existing Maven Projects. On the Import Maven Projects page, browse to the /cloud-native-spring directory (e.g. CN-Workshop-LHC/labs/lab01/cloud-native-spring)
+Select File > Import… Then select Maven > Existing Maven Projects.
++
+Import Maven Projects ページにて, /cloud-native-spring ディレクトリを確認　 (e.g. CN-Workshop-INT/labs/lab01/cloud-native-spring)
++
+
 
 == エンドポイントの追加
 
 . @RestControllerのアノテーションを_io.pivotal.CloudNativeSpringApplication_に追加 (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
-. _RestController_がimportされているかも確認
+. _RestController_クラスがimportされているかも確認
 
 +
 [source, java, numbered]
@@ -68,14 +74,14 @@ public class CloudNativeSpringApplication {
 ---------------------------------------------------------------------
 
 . 下記のリクエストハンドラを _io.pivotal.CloudNativeSpringApplication_ に追加(/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
-. _RequestMapping_もimportされているのを確認
+. _RequestMapping_クラスもimportされているのを確認
 
 +
 [source,java]
 ---------------------------------------------------------------------
 @RequestMapping("/")
 public String hello() {
-    return "Hello World!";
+    return "Hello Spring Boot!";
 }
 ---------------------------------------------------------------------
 +
@@ -107,13 +113,16 @@ public class CloudNativeSpringApplication {
 
 ==  _cloud-native-spring_ アプリの実行
 
-. ターミナルにてディレクトリを変更 *CN-Workshop-LHC/labs/lab01/cloud-native-spring*
+. ターミナルにてディレクトリを変更 *CN-Workshop-INT/labs/lab01/cloud-native-spring*
 +
-$ cd /CN-Workshop-LHC/labs/lab01/cloud-native-spring
-
+``
+$ cd /CN-Workshop-INT/labs/lab01/cloud-native-spring
+``
 . スタンドアロンでのアプリケーションの実行
 +
-$ mvn clean spring-boot:run
+``
+$ ./mvnw clean spring-boot:run
+``
 
 . サーバ(Tomcat)が起動(8080ポート)しているのを確認:
 +
@@ -125,7 +134,7 @@ $ mvn clean spring-boot:run
 
 . ブラウザで確認: http://localhost:8080
 
-. *Ctrl + C*でアプリを停止 _cloud-native-spring_
+. *Ctrl + C*でアプリを停止
 
 == _cloud-native-spring_ をCloud Foundryにデプロイ
 
@@ -140,9 +149,10 @@ $ ./mvnw clean install -Dmaven.test.skip=true
 
 . マニフェストファイルをプロジェクトのルートフォルダに作成します /cloud-native-spring
 +
+``
 $ touch manifest.yml
-
-. マニフェストファイル_manifest.yml_を使って、アプリケーションの情報（メタデータ）を追加
+``
+. 作成したマニフェストファイル_manifest.yml_にアプリケーションの情報（メタデータ）を追加
 +
 [source, bash]
 ---------------------------------------------------------------------
@@ -157,22 +167,24 @@ applications:
   env:
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
 ---------------------------------------------------------------------
++
 
-``
-https://discuss.pivotal.io/hc/en-us/articles/230141007-Java-Web-Applications-Slow-Startup-or-Failing
+TIP: https://discuss.pivotal.io/hc/en-us/articles/230141007-Java-Web-Applications-Slow-Startup-or-Failing +
 This instructs the JVM to use a non-blocking entropy source (i.e. /dev/urandom) instead of the default blocking entropy source (i.e. /dev/random).
 ``
 
+
 . アプリケーションをpush
 +
+``
 $ cf push -f manifest.yml
+``
 +
+TIP: マニフェストファイルを指定せずに"cf push"のみでpushした場合、cf cliはmanifest.ymlにある内容に従って展開
 
-```
-マニフェストファイルを指定せずに"cf push"のみでpushした場合と、manifest.ymlを探して、そこにある内容に従う
-```
-
++
 . 出力結果に出てくるURLにアクセスする
++
 
 *おめでとうございます！* Spring Bootアプリの作成完了です
 

@@ -5,9 +5,6 @@ Spring Boot, Spring Data, and Spring Data RESTを使ってhypermedia-driven REST
 
 == Hypermedia-Driven RESTful Web サービスとSpring Data REST (using JPA)の利用
 
-```
-```
-
 このアプリケーションは読んだ本のリスト表示とリレーショナルレポジトリへの保存を実施. Lab01で作ったSpring Bootアプリケーションを引き続き利用。まずはドメインモデルを使うために"City"オブジェクトを導入.
 
 == Cityドメインオブジェクトの追加
@@ -78,9 +75,7 @@ public class City implements Serializable {
 +
 上記はJPAアノテーションを使っている(javax.persistence)ため、IDEによってはJPAをimportしているかを確認してください
 
-```
-STSを使っている場合は、Mavenプロジェクトを更新する必要があります(Maven > Upate Project > offlineのチェックボックスを外す)
-```
+NOTICE: STSを使っている場合は、Mavenプロジェクトを更新する必要があります(Maven > Upate Project > offlineのチェックボックスを外す)
 
 .  +io.pivotal.repositories+ としてパッケージを新規作成し、+CityRepository+ インターフェースを作成してください. 下記のコードを利用して、適切なimportを実施して下さい:
 
@@ -94,7 +89,7 @@ public interface CityRepository extends PagingAndSortingRepository<City, Long> {
 }
 ---------------------------------------------------------------------
 
-. JPAとREST Repositoryを使って +io.pivotal.CloudNativeSpringApplication+ にSpring Boot アプリケーションを更新します。
+. JPAとREST Repositoryを使って +io.pivotal.CloudNativeSpringApplication+ のSpring Boot アプリケーションを更新します。
 
 +
 [source,java]
@@ -117,10 +112,10 @@ public class CloudNativeSpringApplication {
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
-. +curl+コマンド、あるいはブラウザを使って、今回作成したエンドポイントにアクセス(http://localhost:8080/cities). 自動的にページやサイズ等をJSON形式で表示
+. _curl_コマンド、あるいはブラウザを使って、今回作成したエンドポイントにアクセス(http://localhost:8080/cities). 自動的にページやサイズ等をJSON形式で表示
 
 +
 [source,bash]
@@ -153,22 +148,23 @@ Date: Thu, 28 Apr 2016 14:44:06 GMT
 }
 ---------------------------------------------------------------------
 
++
 
-ここまでで実行したことは、4つのクラスを作成して、ビルドファイルを編集、結果的にRESTサービスをマイクロサービスとして作成できた
-アプリケーションの+DataSource+ は自動的にSpring Bootで作成されており、この時点ではデータベースが用意されてないため、Javaで標準的に実装しているインメモリデータベースを使ってデータ投入をしている
+NOTE: ここで実行したことは、4つのクラスを作成して、ビルドファイルを編集、結果的にRESTサービスをマイクロサービスとして作成. +
+アプリケーションの_DataSource_ は自動的にSpring Bootにて作成されており、この時点ではデータベースが用意されてないため、Javaで標準的に実装しているインメモリデータベース(H2)を使ってデータ投入をしている
 
 つぎにデータのインポートを実施
 
 == データのインポート
 
-. https://raw.githubusercontent.com/Pivotal-Field-Engineering/CN-Workshop-TM/master/labs/lab02/import.sql[import.sql] ファイルが *CN-Workshop-LHC/labs/lab02/* にあるので +src/main/resources+. にコピー。USにおける郵便番号を含んでいる. Hibernateによりピックアップされ、インメモリデータベース(H2)にインポートされる
+. https://raw.githubusercontent.com/Pivotal-Field-Engineering/CN-Workshop-TM/master/labs/lab02/import.sql[import.sql] ファイルが *CN-Workshop-LHC/labs/lab02/* にあるので *src/main/resources*. にコピー。SQLにおいては米国の郵便番号が含まれており、Hibernateによりピックアップされ、インメモリデータベース(H2)にインポートされる
 
-. その後、アプリケーションをリスタートする
+. アプリケーションをリスタートする
 
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
 . 再度アプリケーションにアクセス。ハイパーメディアにnext, previous, selfが含まれているのが確認できる。またページ指定、あるいはページのサイズも指定可能( +?size=n&page=n+ ）。また、データのソートも +?sort=fieldName+ で可能(fieldNameは都市名に置き換える)。
@@ -268,7 +264,7 @@ Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
 . 再度アプリケーションにアクセス。+search+ エンドポイントが見えてくるのが確認できる
@@ -351,7 +347,7 @@ http://localhost:8080/cities/search/nameContains?q=Fort&size=1
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean package
+$ ./mvnw clean package
 ---------------------------------------------------------------------
 
 . 既存のマニフェストを利用して, +manifest.yml+の変更を実施。  タイムアウトのパラメータを設定して、データロードの初期化時間に十分な値に変更:
@@ -402,4 +398,4 @@ urls: cloud-native-spring.cf.mycloud.com
 $ curl -i cloud-native-spring.cf.mycloud.com/cities
 ---------------------------------------------------------------------
 
-次はLab03で状態表示を学びましょう。
+===== 次はLab03です。状態表示を学びましょう。
