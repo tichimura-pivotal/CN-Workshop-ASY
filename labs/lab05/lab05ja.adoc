@@ -1,6 +1,9 @@
 = Spring Cloudによるサービス登録とディスカバリ
 
-Spring BootとSpring Cloudを使ってアプリケーション登録サービスをサービスレジストリを使って実装する。そのために、まずはEurekaサービスのインスタンスをプロビジョニングする。さらに、シンプルなクライアントアプリケーションを追加して、サービスレジストリからアプリケーションをルックアップして、変更依頼をCitiesサービスにかける
+Spring BootとSpring Cloudを使ってアプリケーション登録サービスをサービスレジストリを以下の流れで実装します。 +
+- Eurekaサービスのインスタンスをプロビジョニング +
+- シンプルなクライアントアプリケーションを追加 +
+- サービスレジストリからアプリケーションをルックアップして、変更依頼をCitiesサービスにかける
 
 == _Cloud-Native-Spring_ アプリケーションを変更してEurekaを登録
 
@@ -244,9 +247,13 @@ spring-cloud-dependencies もすでに作成されているかもしれないの
 ---------------------------------------------------------------------
 +
 上記では、mvn installの結果を利用して、ライブラリとして読み込まれます。
-
-. RESTサービスを利用するのでFeignを利用する。FeignによりRESTサービス関連の管理とJSONマーシャリング/アンマーシャリングをドメインオブジェクトに対して実施可能。
-そのためのFeign Clientインターフェースを追加。Feignを利用するには、Eurekaサービスレジストリから名前をルックアップするのみ。以下のインターフェース定義をコードに実施 :
++
+. RESTサービスを利用するのでFeignを実装 +
+- FeignによりRESTサービス関連の管理とJSONマーシャリング/アンマーシャリングをドメインオブジェクトに対して実施可能 +
+- そのためのFeign Clientインターフェースを追加 +
+- Feignを利用するには、Eurekaサービスレジストリから名前をルックアップするのみ +
++
+. 以下のインターフェース定義をコードに実装
 +
 [source,java,numbered]
 ---------------------------------------------------------------------
@@ -257,6 +264,11 @@ spring-cloud-dependencies もすでに作成されているかもしれないの
   	Resources<City> getCities();
   }
 ---------------------------------------------------------------------
++
+TIP: 上記のFlienClient()にて、HTTPSで指定している_cloud-native-spring_ は、application.ymlに登録した内容(spring.application.name)と同じ名前にして下さい。 +
+また、アプリケーションのデプロイで確認した内容と同じであるか、UIのアプリも追加されているかも確認してください。
++
+image::images/pws-service-registry.png[]
 +
 さらにいくつかのアノテーションも追加
 +
@@ -303,8 +315,11 @@ public class CloudNativeSpringUiApplication {
 
 ---------------------------------------------------------------------
 
-. 次にVaadin UIを使ってデータレンダリングを実施。ここではUI作成の詳細までは実施しないがVaadinによりUI作成が簡易に実施可能。
-UIはFeignクライアントを利用する。_io.pivotal.AppUI_ クラスを作成し、下記のコードをコピー(/cloud-native-spring-ui/src/main/java/io/pivotal/AppUI.java):
+. Vaadin UIを使ってデータレンダリングを実施 +
+- VaadinによりUI作成が簡易に実施可能 (本内容ではUI作成には重点が置かれてない) +
+- UIの部分においてFeignクライアントを利用 +
+- _io.pivotal.AppUI_ クラスを作成し、下記コードを利用してファイルを保存 +
+実装対象ファイル: /cloud-native-spring-ui/src/main/java/io/pivotal/AppUI.java
 
 +
 [source,java]
@@ -347,14 +362,15 @@ public class AppUI extends UI {
       }
 }
 ---------------------------------------------------------------------
-. アプリケーションの名前を予め入れておき、きちんとEurekaに作成されることを確認。
-下記をapplication.propertiesに記載( */cloud-native-spring-ui/src/main/resources/application.properties*):
+. アプリケーションの名前を決定し、きちんとEureka(Service Registry)に登録するために、
+下記をapplication.propertiesに記載: +
+対象ファイル: */cloud-native-spring-ui/src/main/resources/application.properties*
 +
 [source, yaml]
 ---------------------------------------------------------------------
 spring.application.name=cloud-native-spring-ui
 ---------------------------------------------------------------------
-なお、application.properties or application.ymlで記載の仕方が異なるので注意
+なお、application.properties (properties形式) もしくは application.yml (JSON形式)で記載の仕方が異なるので注意
 
 == デプロイ
 

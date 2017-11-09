@@ -138,6 +138,8 @@ management:
 
 security:
   basic:
+    enabled:  false
+
 ---------------------------------------------------------------------
 
 == _cloud-native-spring_ アプリを実行
@@ -146,7 +148,7 @@ security:
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
 . http://localhost:8080 をブラウズしてあいさつ文が出るか確認
@@ -173,7 +175,7 @@ image::images/config-scs2.jpg[]
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ cf update-service config-server -c '{"git": { "uri": "https://github.com/azwickey-pivotal/config-repo" } }'
+$ cf update-service config-server -c '{"git": { "uri": "https://github.com/tichimura-pivotal/config-repo" } }'
 ---------------------------------------------------------------------
 
 . Config Serverの管理ページを更新すると、下記のようなメッセージが見て取れる。reintializedが終わるまでスクリーンを更新する。
@@ -222,7 +224,7 @@ path: ./target/cloud-native-spring-0.0.1-SNAPSHOT-exec.jar
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean package
+$ ./mvnw clean package
 ---------------------------------------------------------------------
 
 . cf push
@@ -237,11 +239,17 @@ $ cf push -f manifest.yml
 ```
 Bon Jour World!
 ```
++
+[NOTE]
+====
+何ができたか
 
-. *何ができたか* -- Spring Cloud Starter Config Clientを使って _service connector_ により自動的にアプリケーションにバインドされるよう、Config Serverを検出。
-サービスコネクターによりアプリケーションは自動的に構成され、Cloud Config Serverに接続し、構成をダウンロードし、アプリケーションに適用する
+Spring Cloud Starter Config Clientを使って _service connector_ により自動的にアプリケーションにバインドされるよう、Config Serverを検出 +
+サービスコネクターによりアプリケーションは自動的に構成され、Cloud Config Serverに接続し、構成をダウンロードし、アプリケーションに適用
+====
 
-. 今回構成したgitレポジトリ, https://github.com/azwickey-pivotal/config-repo, において *cloud-native-spring.yml* というファイルがあるのがわかる。
++
+. 今回構成したgitレポジトリ, https://github.com/tichimura-pivotal/config-repo, において *cloud-native-spring.yml* というファイルがあるのがわかる。
 このファイルネームはspring.application.nameにある値と同じ。構成自体はこのファイルから読まれる, 今回の場合、以下の内容を用意している:
 +
 [source, yaml]
