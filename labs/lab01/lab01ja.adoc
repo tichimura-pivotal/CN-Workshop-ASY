@@ -1,16 +1,18 @@
-= Building a Spring Boot Application
+= Lab01: Building a Spring Boot Application
+
+想定時間: 30分-1時間
 
 == Create a Spring Boot Project
 
 . https://start.spring.io に移動
 
-. Maven Project としてSpring Boot 1.5.8で作成
+. Maven Project としてSpring Boot 2.0.4で作成
 
 . 下記の内容で*Project metadata*フィールドを埋める:
 +
 Group:: +io.pivotal+
 Artifact:: +cloud-native-spring+
-
++
 NOTE: 複数の受講者が同じSpaceを使う場合は、cloud-native-spring -> cloud-native-YOURNAMEなどでも良いです。
 
 . (Option) "Switch to the full version."をクリックして、"Package Name"をio.pivotalに変更
@@ -26,14 +28,14 @@ image::img/spring-initializr.png[Initializer]
 
 . "Selected Dependencies"で、上記のDependenciesがそれぞれあるのを確認する
 
-. 以下のようにzipファイルを展開 *CN-Workshop-INT/labs/lab01/cloud-native-spring*
+. 以下のようにzipファイルを展開 *CN-Workshop-ASY/labs/lab01/cloud-native-spring*
 
 +
 このようなディレクトリになることを確認:
 +
 [source, bash]
 ---------------------------------------------------------------------
-CN-Workshop-LHC:
+CN-Workshop-ASY:
 ├── labs
 │   ├── lab01
 │   │   ├── cloud-native-spring
@@ -45,14 +47,14 @@ CN-Workshop-LHC:
 +
 Select File > Import… Then select Maven > Existing Maven Projects.
 +
-Import Maven Projects ページにて, /cloud-native-spring ディレクトリを確認　 (e.g. CN-Workshop-INT/labs/lab01/cloud-native-spring)
+Import Maven Projects ページにて, /cloud-native-spring ディレクトリを確認　 (e.g. CN-Workshop-ASY/labs/lab01/cloud-native-spring)
 +
 
 
 == エンドポイントの追加
 
-. @RestControllerのアノテーションを_io.pivotal.CloudNativeSpringApplication_に追加 (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
-. _RestController_クラスがimportされているかも確認
+. @RestControllerのアノテーションを__io.pivotal.CloudNativeSpringApplication__に追加 (/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
+__RestController__クラスのimportも確認
 
 +
 [source, java, numbered]
@@ -74,12 +76,12 @@ public class CloudNativeSpringApplication {
 ---------------------------------------------------------------------
 
 . 下記のリクエストハンドラを _io.pivotal.CloudNativeSpringApplication_ に追加(/cloud-native-spring/src/main/java/io/pivotal/CloudNativeSpringApplication.java).
-. _RequestMapping_クラスもimportされているのを確認
+__RequestMapping__クラスのimportも確認
 
 +
 [source,java]
 ---------------------------------------------------------------------
-@RequestMapping("/")
+@RequestMapping("/hello")
 public String hello() {
     return "Hello Spring Boot!";
 }
@@ -104,7 +106,7 @@ public class CloudNativeSpringApplication {
         SpringApplication.run(CloudNativeSpringApplication.class, args);
     }
 
-    @RequestMapping("/")
+    @RequestMapping("/hello")
     public String hello() {
         return "Hello World!";
     }
@@ -113,10 +115,10 @@ public class CloudNativeSpringApplication {
 
 ==  _cloud-native-spring_ アプリの実行
 
-. ターミナルにてディレクトリを変更 *CN-Workshop-INT/labs/lab01/cloud-native-spring*
+. ターミナルにてディレクトリを変更 *CN-Workshop-ASY/labs/lab01/cloud-native-spring*
 +
 ``
-$ cd /CN-Workshop-INT/labs/lab01/cloud-native-spring
+$ cd /CN-Workshop-ASY/labs/lab01/cloud-native-spring
 ``
 . スタンドアロンでのアプリケーションの実行
 +
@@ -132,7 +134,7 @@ $ ./mvnw clean spring-boot:run
 2015-10-02 13:26:59.267  INFO 44749 --- [lication.main()] io.pivotal.hello.CloudNativeSpringApplication: Started CloudNativeSpringApplication in 2.541 seconds (JVM running for 9.141)
 ---------------------------------------------------------------------
 
-. ブラウザで確認: http://localhost:8080
+. ブラウザで確認: http://localhost:8080/hello
 
 . *Ctrl + C*でアプリを停止
 
@@ -152,7 +154,7 @@ $ ./mvnw clean install -Dmaven.test.skip=true
 ``
 $ touch manifest.yml
 ``
-. 作成したマニフェストファイル_manifest.yml_にアプリケーションの情報（メタデータ）を追加
+. 作成したマニフェストファイル_manifest.yml_にアプリケーションの情報（メタデータ）を追加.
 +
 [source, bash]
 ---------------------------------------------------------------------
@@ -163,12 +165,14 @@ applications:
   memory: 1G
   instances: 1
   path: ./target/cloud-native-spring-0.0.1-SNAPSHOT.jar
-  buildpack: java_buildpack_offline
+# PCF環境の場合
+  buildpack: java_buildpack_offline　
+# PWS環境の場合
+#  buildpack: java_buildpack
   env:
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
 ---------------------------------------------------------------------
 +
-
 TIP: https://discuss.pivotal.io/hc/en-us/articles/230141007-Java-Web-Applications-Slow-Startup-or-Failing +
 This instructs the JVM to use a non-blocking entropy source (i.e. /dev/urandom) instead of the default blocking entropy source (i.e. /dev/random).
 ``
@@ -188,4 +192,4 @@ TIP: マニフェストファイルを指定せずに"cf push"のみでpushし�
 
 *おめでとうございます！* Spring Bootアプリの作成完了です
 
-===== 次はLab02に進みましょう
+===== 次は link:../lab02/lab02ja.adoc[Lab02]に進みましょう

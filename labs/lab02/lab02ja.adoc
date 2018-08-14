@@ -398,4 +398,4 @@ urls: cloud-native-spring.cf.mycloud.com
 $ curl -i cloud-native-spring.cf.mycloud.com/cities
 ---------------------------------------------------------------------
 
-===== 次はLab03です。状態表示を学びましょう。
+===== 次は link:../lab02/lab02ja.adoc[Lab03]です。状態表示を学びましょう。

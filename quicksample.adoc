@@ -7,30 +7,39 @@
 
 == 順番
 
-. cf target
+1. cf target
++
+``
 cf login -a https://api.<yourtarget-domain> --skip-ssl-validation
-
-. サービスの作成 (1. demo -> 受講者の名前に変える。2. config serverの場所を変えるのもあり)
+``
++
+2. サービスの作成 (1. demo -> 受講者の名前に変える。2. config serverの場所を変えるのもあり)
++
+```
 cf cs p-config-server standard config-server-demo -c '{"git": { "uri": "https://github.com/tichimura-pivotal/config-repo" } }'
 cf create-service p-service-registry standard service-registry-demo
 cf create-service p-circuit-breaker-dashboard standard circuit-breaker-dashboard-demo
+```
++
+3. 個別処理
 
-. 個別処理
 .. lab01に移動
-
++
 ```
 cd lab01/cloud-native-spring
 ```
 
 .. mvn実行
-
++
 ```
 mvnw clean package
 mvnw install
+# testで失敗する場合は、-DskipTests=trueを実施
+
 ```
-# -DskipTests=true
 
 .. manifestファイルの編集
++
 ```
 host: cloud-native-spring-tichi
 
@@ -42,28 +51,29 @@ services:
 - service-registry-demo
 ```
 .. cf push
++
 ```
 cf push -f manifest.yml
 ```
-. lab05移動
 
+4. lab05移動
++
 ```
 cd ../lab05/cloud-native-spring-ui
 ```
 
 .. mvn実行
-
++
 ```
 mvnw clean package
 (もしくはmvnw clean package -DskipTests=true)
 mvnw install
 (もしくはmvnw install -DskipTests=true)
-
 ```
 
 
 .. manifestファイルの編集
-
++
 ```
   host: cloud-native-spring-ui-tichi
   ...
@@ -73,7 +83,9 @@ mvnw install
   - service-registry-demo
   - circuit-breaker-dashboard-demo
 ```
+
 .. cf push
++
 ```
-cf push -f manifest.yml
+  cf push -f manifest.yml
 ```
