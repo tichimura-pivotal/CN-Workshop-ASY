@@ -37,8 +37,8 @@ image::img/spring-initializr.png[Initializer]
 ---------------------------------------------------------------------
 CN-Workshop-ASY:
 ├── labs
-│   ├── lab01
-│   │   ├── cloud-native-spring
+│   ├── lab01
+│   │   ├── cloud-native-spring
 ---------------------------------------------------------------------
 
 . pom.xmlを使ってeditor/IDEで処理

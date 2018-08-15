@@ -1,11 +1,17 @@
 :compat-mode:
-= パーシステンスの追加
+= Lab02: パーシステンスの追加
 
 Spring Boot, Spring Data, and Spring Data RESTを使ってhypermedia-driven RESTful Webサービスを実現. その後PCFにデプロイ
 
+想定時間: 1時間
+
 == Hypermedia-Driven RESTful Web サービスとSpring Data REST (using JPA)の利用
 
-このアプリケーションは読んだ本のリスト表示とリレーショナルレポジトリへの保存を実施. Lab01で作ったSpring Bootアプリケーションを引き続き利用。まずはドメインモデルを使うために"City"オブジェクトを導入.
+このアプリケーションは,
+
+- 読んだ本のリスト表示とリレーショナルレポジトリへの保存を実施.
+- Lab01で作ったSpring Bootアプリケーションを引き続き利用.
+- ドメインモデルを使うために"City"オブジェクトを導入から開始.
 
 == Cityドメインオブジェクトの追加
 . パッケージ名`io.pivotal.domain`としてパッケージを作成。この中で`City`クラスを作成. 下記内容をペーストする。都市を郵便番号、地理情報にて表示
@@ -15,13 +21,18 @@ Spring Boot, Spring Data, and Spring Data RESTを使ってhypermedia-driven REST
 ---------------------------------------------------------------------
 package io.pivotal.domain;
 
+/*
+import java.io.Serializable;
+import javax.persistence.*;
+*/
+
 @Entity
 @Table(name="city")
 public class City implements Serializable {
     private static final long serialVersionUID = 1L;
 
     @Id
-    @GeneratedValue
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private long id;
 
     @Column(nullable = false)
@@ -73,9 +84,18 @@ public class City implements Serializable {
 
 ---------------------------------------------------------------------
 +
-上記はJPAアノテーションを使っている(javax.persistence)ため、IDEによってはJPAをimportしているかを確認してください
-
-NOTICE: STSを使っている場合は、Mavenプロジェクトを更新する必要があります(Maven > Upate Project > offlineのチェックボックスを外す)
+NOTE: 上記はJPAアノテーションを使っている(javax.persistence)ため、IDEによってはJPAをimportしているかを確認してください
++
+NOTE: STSを使っている場合は、Mavenプロジェクトを更新する必要があります(Maven > Upate Project > offlineのチェックボックスを外す)
++
+NOTE: @GeneratedValueのままでは下記エラーが出るため、@GeneratedValue(strategy=GenerationType.IDENTITY)に変更してます
++
+```
+Caused by: org.h2.jdbc.JdbcSQLException: NULL not allowed for column "ID"; SQL statement:
+insert into city (postal_code, latitude, longitude, name, state_code, county) values ('78376','+27.660242','-098.517894','REALITOS','TX','DUVAL') [23502-197]
+	at org.h2.message.DbException.getJdbcSQLException(DbException.java:357) ~[h2-1.4.197.jar:1.4.197]
+...
+```
 
 .  +io.pivotal.repositories+ としてパッケージを新規作成し、+CityRepository+ インターフェースを作成してください. 下記のコードを利用して、適切なimportを実施して下さい:
 
@@ -83,6 +103,12 @@ NOTICE: STSを使っている場合は、Mavenプロジェクトを更新する�
 [source,java]
 ---------------------------------------------------------------------
 package io.pivotal.repositories;
+
+/*
+import org.springframework.data.repository.PagingAndSortingRepository;
+import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import io.pivotal.domain.City;
+*/
 
 @RepositoryRestResource(collectionResourceRel = "cities", path = "cities")
 public interface CityRepository extends PagingAndSortingRepository<City, Long> {
@@ -96,13 +122,16 @@ public interface CityRepository extends PagingAndSortingRepository<City, Long> {
 ---------------------------------------------------------------------
 @SpringBootApplication
 @RestController
-@EnableJpaRepositories // <---- Add this
-@Import(RepositoryRestMvcConfiguration.class) // <---- And this
+@EnableJpaRepositories // <---- ここを追加
+@Import(RepositoryRestMvcConfiguration.class) // <---- ここを追加
 public class CloudNativeSpringApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(CloudNativeSpringApplication.class, args);
     }
+
+    ＜省略＞
+
 }
 ---------------------------------------------------------------------
 
@@ -149,6 +178,7 @@ Date: Thu, 28 Apr 2016 14:44:06 GMT
 ---------------------------------------------------------------------
 
 +
+TIP: うまく起動できない場合は、それぞれのクラスのpackage名が異なってないか注意(io.pivotal, io.pivotal.domain, io.pivotal.repositories)
 
 NOTE: ここで実行したことは、4つのクラスを作成して、ビルドファイルを編集、結果的にRESTサービスをマイクロサービスとして作成. +
 アプリケーションの_DataSource_ は自動的にSpring Bootにて作成されており、この時点ではデータベースが用意されてないため、Javaで標準的に実装しているインメモリデータベース(H2)を使ってデータ投入をしている
@@ -157,7 +187,7 @@ NOTE: ここで実行したことは、4つのクラスを作成して、ビル�
 
 == データのインポート
 
-. https://raw.githubusercontent.com/Pivotal-Field-Engineering/CN-Workshop-TM/master/labs/lab02/import.sql[import.sql] ファイルが *CN-Workshop-LHC/labs/lab02/* にあるので *src/main/resources*. にコピー。SQLにおいては米国の郵便番号が含まれており、Hibernateによりピックアップされ、インメモリデータベース(H2)にインポートされる
+. https://raw.githubusercontent.com/tichimura-pivotal/CN-Workshop-ASY/master/labs/lab02/import.sql[import.sql] ファイルが *CN-Workshop-ASY/labs/lab02/* にあるので *src/main/resources*. にコピー。SQLにおいては米国の郵便番号が含まれており、Hibernateによりピックアップされ、インメモリデータベース(H2)にインポートされる
 
 . アプリケーションをリスタートする
 
@@ -259,6 +289,9 @@ Page<City> findByStateCodeIgnoreCase(@Param("q") String stateCode, Pageable page
 @RestResource(path = "postalCode", rel = "postalCode")
 Page<City> findByPostalCode(@Param("q") String postalCode, Pageable pageable);
 ---------------------------------------------------------------------
++
+NOTE: 追加でインポートするpackageに注意。(org.springframework.data.domain.Page, org.springframework.data.domain.Pageable, org.springframework.data.repository.query.Param, org.springframework.data.rest.core.annotation.RestResourceをimport)
+
 
 . アプリケーションの起動
 +
@@ -271,6 +304,7 @@ $ ./mvnw clean spring-boot:run
 +
 [source,bash]
 ---------------------------------------------------------------------
+
 $ curl -i "localhost:8080/cities"
 HTTP/1.1 200 OK
 Server: Apache-Coyote/1.1
@@ -291,13 +325,11 @@ Date: Tue, 27 May 2014 20:33:52 GMT
     "search" : {
       "href" : "http://localhost:8080/cities/search"
     }
-},
-// (Remainder omitted...)
+}
 ---------------------------------------------------------------------
 
-. +search+ エンドポイントにアクセス:
-+
-http://localhost:8080/cities/search
+
+. searchエンドポイントにアクセス
 +
 [source,bash]
 ---------------------------------------------------------------------
@@ -333,6 +365,7 @@ Date: Tue, 27 May 2014 20:38:32 GMT
 +
 検索エンドポイントをそれぞれに作成
 
+
 . 下記のエンドポイントの検証。好きな値に置き換えて試して見てください
 +
 http://localhost:8080/cities/search/postalCode?q=75202
@@ -348,9 +381,11 @@ http://localhost:8080/cities/search/nameContains?q=Fort&size=1
 [source,bash]
 ---------------------------------------------------------------------
 $ ./mvnw clean package
+# あるいは以下を実行してTestを省略
+$ ./mvnw clean install -Dmaven.test.skip=true
 ---------------------------------------------------------------------
 
-. 既存のマニフェストを利用して, +manifest.yml+の変更を実施。  タイムアウトのパラメータを設定して、データロードの初期化時間に十分な値に変更:
+. 既存のマニフェストを利用して, __manifest.yml__の変更を実施。  タイムアウトのパラメータを設定して、データロードの初期化時間に十分な値に変更:
 +
 [source,yml]
 ---------------------------------------------------------------------
@@ -358,7 +393,7 @@ $ ./mvnw clean package
 applications:
 - name: cloud-native-spring
   host: cloud-native-spring
-  memory: 512M
+  memory: 1G
   instances: 1
   path: ./target/cloud-native-spring-0.0.1-SNAPSHOT.jar
   buildpack: java_buildpack_offline
@@ -398,4 +433,5 @@ urls: cloud-native-spring.cf.mycloud.com
 $ curl -i cloud-native-spring.cf.mycloud.com/cities
 ---------------------------------------------------------------------
 
-===== 次は link:../lab02/lab02ja.adoc[Lab03]です。状態表示を学びましょう。
+
+===== 次は link:../lab03/lab03ja.adoc[Lab03]です。状態表示を学びましょう。

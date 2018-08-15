@@ -1,11 +1,15 @@
-= メトリクスを利用したSpring Bootアプリケーションの拡張
+= Lab03: メトリクスを利用したSpring Bootアプリケーションの拡張
+
+想定時間: 1時間
 
 == Spring Actuatorの設定
 
 Spring Bootには、アプリケーションのモニタリングと管理に有効な機能があり、特にActuatorは本番環境での利用を想定された優れた機能を提供している。
 Actuatorは  _spring-boot-starter-actuator_ をクラスパスに設定することで利用可能。ここではプロジェクトセットアップ時に *start.spring.io* にて設定済みのため、確認のみ行う。
 
-. pom.xmlにて"dependncy"にてActuatorが設定されているかを確認: */cloud-native-spring/pom.xml*.  下記の内容が確認できるはず (プロジェクト作成時に自動生成されている）:
+. pom.xmlにて"dependncy"にてActuatorが設定されているかを確認: ( */cloud-native-spring(あるいは個別に作成したディレクトリ)/pom.xml*）.
++
+下記の内容を確認 (プロジェクト作成時に自動生成されている）:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -15,96 +19,38 @@ Actuatorは  _spring-boot-starter-actuator_ をクラスパスに設定するこ
 </dependency>
 ---------------------------------------------------------------------
 
-. デフォルトではSpring Bootは、Spring Securityを設定し、エンドポイントへのアクセスを制御している。本番では考えにくいが、今回は検証のため、この機能自体をdisableにしておく。設定自体は *cloud-native-spring/src/main/resources/application.yml* というファイルを作成して下記内容を記入する。
-+
-[source, yaml]
----------------------------------------------------------------------
-endpoints: # add this section
-  sensitive: false
----------------------------------------------------------------------
-このような結果が返ってくる。
-+
-```
-{
-  "status" : "UP"
-}
-```
-"management.security.enabled: false"を加えて実施
-+
-[source, yaml]
----------------------------------------------------------------------
-endpoints: # add this section
-  sensitive: false
-management.security.enabled: false
----------------------------------------------------------------------
-+
-```
-{
-  "status" : "UP",
-  "diskSpace" : {
-    "status" : "UP",
-    "total" : 498937626624,
-    "free" : 30943432704,
-    "threshold" : 10485760
-  },
-  "db" : {
-    "status" : "UP",
-    "database" : "H2",
-    "hello" : 1
-  }
-}
-```
-+
-[source, yaml]
----------------------------------------------------------------------
-endpoints: # add this section
-  sensitive: true
----------------------------------------------------------------------
-+
-これをtrueにしていると以下のエラーが返ってくる
-+
-```
-Whitelabel Error Page
+. Spring Boot 2.0では、公開されている全エンドポイントがセキュリティ保護対象ではなくなったため、以下の設定を *cloud-native-spring/src/main/resources/application.properties* に入れる
+なお、Spring Boot 1.5では、デフォルトではSpring Securityを設定し、エンドポイントへのアクセスを制御しており、この機能自体をdisableにしておく必要があった。
 
-This application has no explicit mapping for /error, so you are seeing this as a fallback.
++
+[source, xml]
+---------------------------------------------------------------------
+management.endpoints.web.exposure.include=*
+---------------------------------------------------------------------
 
-Fri May 12 19:37:08 JST 2017
-There was an unexpected error (type=Unauthorized, status=401).
-Full authentication is required to access this resource.
-```
 +
-console logにはこんな出力
-+
-```
-2017-05-12 19:36:36.684  INFO 71514 --- [nio-8080-exec-1] s.b.a.e.m.MvcEndpointSecurityInterceptor : Full authentication is required to access actuator endpoints. Consider adding Spring Security or set 'management.security.enabled' to false.
-```
-以下の内容で変更して実行
-+
-[source, yaml]
----------------------------------------------------------------------
-endpoints: # add this section
-  sensitive: true
-management.security.enabled: false
----------------------------------------------------------------------
+NOTE: Spring Boot 2.0から、actuatorのエンドポイントが変更（/actuatorがデフォルト)
+link:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Migration-Guide#base-path[Base Path]
 +
 
+NOTE: Spring Boot 2.0よりデフォルトのセキュリティポリシーが変更
+link:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Migration-Guide#security[Spring 2.0 Migration Guide]
+  +
+link:https://spring.io/blog/2017/09/15/security-changes-in-spring-boot-2-0-m4[Security changes in Spring Boot 2.0 M4]
++
 ```
-{
-  "status" : "UP",
-  "diskSpace" : {
-    "status" : "UP",
-    "total" : 498937626624,
-    "free" : 30984785920,
-    "threshold" : 10485760
-  },
-  "db" : {
-    "status" : "UP",
-    "database" : "H2",
-    "hello" : 1
-  }
-}
+Spring Boot 2 greatly simplifies the default security configuration and makes adding custom security easy. Rather than having several security-related auto-configurations, Spring Boot now has a single behavior that backs off as soon as you add your own WebSecurityConfigurerAdapter.
 ```
-
++
+NOTE: 以前は、__endpoints.sensitive__, __management.security.enabled__を設定していたが、これらがdeprecatedとなっているため省略
++
+```
+Property 'endpoints.sensitive' is Deprecated: Endpoint sensitive flag is no longer customizable as Spring Boot no longer provides a customizable security auto-configuration . Create or adapt your security configuration accordingly.
+```
++
+```
+Property 'management.security.enabled' is Deprecated: A global security auto-configuration is now provided. Provide your own WebSecurityConfigurer bean instead.
+```
 
 . 更新したアプリケーションを起動
 +
@@ -115,43 +61,53 @@ $ mvn clean spring-boot:run
 +
 以下のエンドポイントの確認
 +
-http://localhost:8080/health
+.. アプリケーションとデータソースの状態表示。(カスタマイズは後ほど実施)
 +
-アプリケーションとデータソースの状態表示。カスタマイズは後ほど実施
+http://localhost:8080/actuator/health
 +
-http://localhost:8080/beans
+.. SpringコンテキストにおけるBeanの一覧表示
 +
-SpringコンテキストにおけるBeanの一覧表示
+http://localhost:8080/actuator/beans
 +
-http://localhost:8080/autoconfig
+.. アプリケーションのbootstrappingにおけるauto-configurationを一覧表示(従来はautoconfig)
 +
-アプリケーションのbootstrappingにおけるauto-configurationを一覧表示
+http://localhost:8080/actuator/conditions
 +
-http://localhost:8080/configprops
+.. @ConfigurationPropertiesのリストを全て表示
 +
-@ConfigurationPropertiesのリストを全て表示
+http://localhost:8080/actuator/configprops
 +
-http://localhost:8080/env
+.. Java System propertiesと同様にシェル環境変数を表示
 +
-Java System propertiesと同様にシェル環境変数を表示
+http://localhost:8080/actuator/env
 +
-http://localhost:8080/mappings
+.. URIリクエストマッピングとコントローラーメソッドの表示
 +
-URIリクエストマッピングとコントローラーメソッドの表示
+http://localhost:8080/actuator/mappings
 +
-http://localhost:8080/dump
+.. スレッドダンプの実施(従来のdump)
 +
-スレッドダンプの実施
+http://localhost:8080/actuator/threaddump
 +
-http://localhost:8080/trace
+.. エンドポイントのトレースを実施(デフォルトでは終盤のHTTPリクエストのみ、従来のtrace)
 +
-エンドポイントのトレースを実施(デフォルトでは終盤のHTTPリクエストのみ)
+http://localhost:8080/actuator/httptrace
++
 
-. アプリケーションの停止
+
+. アプリケーションを停止
+
++
+NOTE: shutdownエンドポイントを利用しても実行が可能。この場合、明示的にapplication.propertiesに記載が必要
++
+```
+management.endpoint.shutdown.enabled=true
+```
+
 
 == バージョン管理情報の挿入
 
-Spring Bootにおいてはメタデータを定義できるエンドポイントがある (http://localhost:8080/info) 。デフォルトではempty。
+Spring Bootにおいてはメタデータを定義できるエンドポイントがある (http://localhost:8080/actuator/info) 。デフォルトではempty。
 
 _actuator_ を活用して、特定の環境におけるビルドとバージョン管理情報を提供する。
 
@@ -169,9 +125,10 @@ _actuator_ を活用して、特定の環境におけるビルドとバージョ
 </plugin>
 ---------------------------------------------------------------------
 +
-*NOTE*  *../../../.git* パスは、.gitディレクトリとしてlab資料のレポジトリに相当する
+*NOTE*  *../../../.git* パスは、.gitディレクトリとしてlab資料のレポジトリに相当.
+
 +
-コードの最終形:
+最終的なpom.xmlの内容:
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -261,7 +218,7 @@ _actuator_ を活用して、特定の環境におけるビルドとバージョ
 $ mvn clean spring-boot:run
 ``
 +
-. http://localhost:8080/info を閲覧。Git commitの情報が含まれるのがわかる
+. http://localhost:8080/actuator/info を閲覧。Git commitの情報が含まれるのがわかる
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -291,21 +248,19 @@ _git-commit-id-plugin_ を指定することで、git commitの詳細情報が�
 
 == ビルド情報の挿入
 
-. 以下の情報を *cloud-native-spring/src/main/resources/application.yml* に入力。 ファイルがなければ先に作成しておく。（前の作業で作成済み）
+. 以下の情報を *cloud-native-spring/src/main/resources/application.properties* に入力。 ファイルがなければ先に作成しておく。（前の作業で作成済み）
 +
 [source, yaml]
 ---------------------------------------------------------------------
-info: # add this section
-  build:
-    artifact: @project.artifactId@
-    name: @project.name@
-    description: @project.description@
-    version: @project.version@
+info.build.artifact=@project.artifactId@
+info.build.name=@project.name@
+info.build.description=@project.description@
+info.build.version=@project.version@
 ---------------------------------------------------------------------
 +
 これらの情報もMavenにより /info エンドポイントに紐付けられる. Spring BootのMaven pluginにより自動的にjarの中に組み込まれる
 +
-NOTE: もしSTSが上記application.ymlにおいて、@文字でのエラーを出している場合は無視しても良い
+NOTE: もしSTSが上記application.propertiesにおいて、@文字でのエラーを出している場合は無視しても良い
 
 . ビルドと実行:
 +
@@ -314,7 +269,7 @@ NOTE: もしSTSが上記application.ymlにおいて、@文字でのエラーを�
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. 再度http://localhost:8080/infoを確認. ビルド情報が表示されるかチェック。
+. 再度http://localhost:8080/actuator/infoを確認. ビルド情報が表示されるかチェック。
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -348,7 +303,7 @@ pom.xmlにあるMavenプロパティを/infoエンドポイントと紐付けた
 
 == 状態表示項目
 
-Spring Bootにおいて http://localhost:8080/health エンドポイントにて、様々な状態表示項目がアプリケーションに関連して提供される
+Spring Bootにおいて http://localhost:8080/actuator/health エンドポイントにて、様々な状態表示項目がアプリケーションに関連して提供される
 
 通常ではSpring Securityは有効になっていないので,  /health エンドポイントは単にUPあるいはDOWNを表示する
 
@@ -359,14 +314,14 @@ Spring Bootにおいて http://localhost:8080/health エンドポイントにて
 }
 ---------------------------------------------------------------------
 
-. ここでの検証のためには、追加で以下のセキュリティ設定を無効化しておく。そのために下記内容を登録する */cloud-native-spring/src/main/resources/application.yml*:
+. ここでの検証のためには、追加で以下のセキュリティ設定を無効化しておく。そのために下記内容を登録する */cloud-native-spring/src/main/resources/application.properties*
 +
 [source, yaml]
 ---------------------------------------------------------------------
-management:
-  security:
-    enabled: false
+management.endpoint.health.show-details=always
 ---------------------------------------------------------------------
+詳細はこちら
+link:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Migration-Guide#endpoints[Endpoints]
 
 . ビルドと実行
 +
@@ -375,9 +330,11 @@ management:
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. http://localhost:8080/healthを確認.
+. http://localhost:8080/actuator/health を確認.
 +
-設定の必要もなく _DiskSpaceHealthIndicator_ が表示される。これはディスクスペースの空き状況を表示する。
+設定の必要もなく "details"以降に詳細が記載される.
++
+_DiskSpaceHealthIndicator_ はディスクスペースの空き状況を表示する。
 アプリケーションがディスクスペース不足に近いかどうかを確認したい場合、このDiskSpaceHealthIndicatorは _DiskSpaceHealthIndicatorProperties_　経由でカスタマイズ可能。
 異なる閾値を設定することで、その条件においてステータスをDOWNとさせることが可能
 +
@@ -385,12 +342,25 @@ $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 {
   "status": "UP",
-  "diskSpace": {
+  "details": {
+    "diskSpace": {
       "status": "UP",
-      "free": 42345678945,
-      "threshold": 12345678
+      "details": {
+        "total": 498954403840,
+        "free": 71317786624,
+        "threshold": 10485760
+      }
+    },
+    "db": {
+      "status": "UP",
+      "details": {
+        "database": "H2",
+        "hello": 1
+      }
+    }
   }
 }
+
 ---------------------------------------------------------------------
 
 . アプリを停止
@@ -435,7 +405,7 @@ public class FlappingHealthIndicator implements HealthIndicator {
 $ mvn clean spring-boot:run
 ---------------------------------------------------------------------
 
-. http://localhost:8080/health を確認して、出力が以下と同じようになるか確認 (かつランダムに変わることも）
+. http://localhost:8080/actuator/health を確認して、出力が以下と似たような状態になるか確認 (かつランダムに変わることも）
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -462,9 +432,9 @@ $ mvn clean spring-boot:run
 
 == メトリックス
 
-NOTE: http://localhost:8080/metrics エンドポイントにて、自動的に収集されるメトリクスが取得可能。さらにカスタムメトリクスも取得可能
+NOTE: http://localhost:8080/actuator/metrics エンドポイントにて、自動的に収集されるメトリクスが取得可能。さらにカスタムメトリクスも取得可能
 
-. http://localhost:8080/metrics　を参照してどのようなメトリクスが取得できるか確認
+. http://localhost:8080/actuator/metrics　を参照してどのようなメトリクスが取得できるか確認
 +
 [source,json]
 ---------------------------------------------------------------------
@@ -514,20 +484,21 @@ NOTE: http://localhost:8080/metrics エンドポイントにて、自動的に�
 ==  _cloud-native-spring_ をPivotal Cloud Foundryに展開
 
 . Actuatorを搭載したSpring BootアプリをPCF上に展開すると, より視覚的な確認がApp Managerより可能に。
-  そのために必要な、いくつかのプロパティを */cloud-native-spring/src/main/resources/application.yml* に追加する。:
+  そのために必要な、いくつかのプロパティを */cloud-native-spring/src/main/resources/application.properties* に追加する。:
 +
 [source, yaml]
 ---------------------------------------------------------------------
-management:
-  security:
-    enabled: false
-  info:
-    git:
-      mode: full
-  cloudfoundry:
-    enabled: true
-    skip-ssl-validation: true
+# INFO CONTRIBUTORS (InfoContributorProperties):
+# Mode to use to expose git information.
+management.info.git.mode=full
+# CLOUDFOUNDRY:
+# Whether to enable extended Cloud Foundry actuator endpoints.
+management.cloudfoundry.enabled=true
+# Whether to skip SSL verification for Cloud Foundry actuator endpoint security calls.
+management.cloudfoundry.skip-ssl-validation=false
 ---------------------------------------------------------------------
+Spring Boot Reference Guide
+https://docs.spring.io/spring-boot/docs/current/reference/htmlsingle/#production-ready
 
 . ビルド情報を成果物に対して追加して、PCFにpushするには、*/cloud-native-spring/pom.xml*
 を編集し、executionのgoalを追加。さらにclassifierを追加して別のartifactを作成
@@ -581,7 +552,7 @@ $ ./mvnw clean package
 applications:
 - name: cloud-native-spring
   host: cloud-native-spring
-  memory: 512M
+  memory: 1G
   instances: 1
   path: ./target/cloud-native-spring-0.0.1-SNAPSHOT-exec.jar
   buildpack: java_buildpack_offline
@@ -610,4 +581,4 @@ image::images/logging.jpg[]
 
 *おめでとうございます!* これで状態表示とメトリクスの追加の仕方を学んで頂きました。
 
-==== 次はLab04です。
+===== 次は link:../lab04/lab04ja.adoc[Lab04]です。
