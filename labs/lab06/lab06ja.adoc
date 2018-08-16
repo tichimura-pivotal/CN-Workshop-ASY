@@ -117,7 +117,7 @@ public class CloudNativeSpringUiApplication {
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ cf create-service p-circuit-breaker-dashboard standard circuit-breaker-dashboard
+$ cf create-service p-circuit-breaker-dashboard trial circuit-breaker-dashboard
 ---------------------------------------------------------------------
 
 . Circuit Breaker Dashboard (Apps Managerの" _manage_ "リンクから確認できる) dashboardがデプロイされていることがわかる。しかし空のままで表示はされてない。 ( _initializing_ というメッセージが数秒出ている場合があるが、リフレッシュしているタイミングで発生しているのでしばらく様子を見る):
