@@ -1,11 +1,16 @@
-= Spring Cloud Circuit Breakerを登録
+= Lab06: Spring Cloud Circuit Breakerを登録
 
 より堅牢なUIを作成するために、Spring Cloud Circuit Breakerを利用して、アプリケーションのふるまいを管理して、もし関連するサービスが利用不可のときにも持続性を維持するように構成する。
 circuit break dashboardを使ってメトリクスを表示する, これらもCloud Foundry Pivotal Spring Cloud Servicesから自動プロビジョニングされる。
 
+想定時間: 30分
+
 == Circuilt Breakerを定義 (_UI Application_ )
 
-.  _spring-cloud-services-starter-circuit-breaker_ をクラスパスに追加. Maven POM ファイルはこちら: */cloud-native-spring-ui/pom.xml*. 下記のspring cloud services dependencyを追加する:
+.  _spring-cloud-services-starter-circuit-breaker_ をクラスパスに追加. Maven POM ファイルに*. 下記のspring cloud services dependencyを追加する:
+
++
+/cloud-native-spring-ui/pom.xml
 +
 [source, xml]
 ---------------------------------------------------------------------
@@ -15,15 +20,19 @@ circuit break dashboardを使ってメトリクスを表示する, これらもC
 </dependency>
 ---------------------------------------------------------------------
 
-. まず、 @EnableCircuitBreaker アノテーションを _io.pivotal.CloudNativeSpringUIApplication_ に追加する(/cloud-native-spring-ui/src/main/java/io/pivotal/CloudNativeSpringUIApplication.java):
+. まず、 @EnableCircuitBreaker アノテーションを _io.pivotal.CloudNativeSpringUIApplication_ に追加する
++
+/cloud-native-spring-ui/src/main/java/io/pivotal/CloudNativeSpringUIApplication.java
 +
 [source, java, numbered]
 ---------------------------------------------------------------------
 @SpringBootApplication
 @EnableFeignClients
 @EnableDiscoveryClient
-@EnableCircuitBreaker
+@EnableCircuitBreaker // これを追加
 public class CloudNativeSpringUiApplication {
+...
+}
 ---------------------------------------------------------------------
 
 . @FeignClient を追加したときにはインターフェースのみを定義していたので、今回はダミークラスを作成して、インターフェースを実装、フォールバックメソッドを定義。FeignClientのフォールバックメソッドも同時に定義。まずは
@@ -49,6 +58,8 @@ _CloudNativeSpringUIApplication_ にインナークラス _CityClientFallback_ �
 ---------------------------------------------------------------------
 @FeignClient(name = "cloud-native-spring", fallback = CityClientFallback.class)
 public interface CityClient {
+...
+}
 ---------------------------------------------------------------------
 +
 . これにより _CloudNativeSpringUiApplication_ は以下のようになる:
@@ -118,8 +129,8 @@ image::images/dash.jpg[]
 [source, yml]
 ---------------------------------------------------------------------
   services:
-  - service-registry
-  - circuit-breaker-dashboard
+  - service-registry-<YOURNAME>
+  - circuit-breaker-dashboard-<YOURNAME>
 ---------------------------------------------------------------------
 
 == Deploy and test application
@@ -128,7 +139,7 @@ image::images/dash.jpg[]
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean package -DskipTests
+$ ./mvnw clean package -DskipTests
 ---------------------------------------------------------------------
 
 . Push application into Cloud Foundry

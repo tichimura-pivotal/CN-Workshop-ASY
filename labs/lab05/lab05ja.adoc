@@ -316,7 +316,7 @@ public class CloudNativeSpringUiApplication {
 	}
 
 	@FeignClient("https://cloud-native-spring")
-	protected interface CityClient {
+	public interface CityClient {
 
 		@RequestMapping(method=RequestMethod.GET, value="/cities", consumes="application/hal+json")
 		Resources<City> getCities();
@@ -374,6 +374,39 @@ public class AppUI extends UI {
       }
 }
 ---------------------------------------------------------------------
+
+. Spring SecurityのBASIC認証が出てしまうのため、Lab04と同様に、以下のクラスを追加
+
++
+/cloud-native-spring-ui/src/main/java/io/pivotal/SecurityConfiguration.java
++
+[source,java,numbered]
+---------------------------------------------------------------------
+package io.pivotal;
+
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+
+@Configuration
+@Profile("development")
+public class SecurityConfiguration extends WebSecurityConfigurerAdapter {
+
+	@Override
+	protected void configure(HttpSecurity http) throws Exception {
+		http
+				.authorizeRequests().anyRequest().permitAll()
+				.and()
+				.httpBasic().disable()
+				.csrf().disable();
+	}
+
+}
+---------------------------------------------------------------------
+参照: link:https://docs.pivotal.io/spring-cloud-services/2-0/common/config-server/writing-client-applications.html#disable-http-basic-auth[Disable HTTP Basic Authentication]
+
+
 . アプリケーションの名前を決定し、きちんとEureka(Service Registry)に登録するために、
 下記をapplication.propertiesに記載: +
 対象ファイル: */cloud-native-spring-ui/src/main/resources/application.properties*
@@ -383,6 +416,7 @@ public class AppUI extends UI {
 spring.application.name=cloud-native-spring-ui
 ---------------------------------------------------------------------
 なお、application.properties (properties形式) もしくは application.yml (JSON形式)で記載の仕方が異なるので注意
+
 
 == デプロイ
 
@@ -411,6 +445,7 @@ applications:
   buildpack: java_buildpack_offline
   timeout: 180
   env:
+    SPRING_PROFILES_ACTIVE: development
     TRUST_CERTS: api.run.pivotal.io
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   services:
