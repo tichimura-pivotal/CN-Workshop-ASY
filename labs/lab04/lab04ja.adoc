@@ -248,6 +248,7 @@ applications:
   buildpack: java_buildpack_offline
   timeout: 180
   env:
+    SPRING_PROFILES_ACTIVE: development  
     TRUST_CERTS: api.run.pivotal.io
     JAVA_OPTS: -Djava.security.egd=file:///dev/urandom
   services:

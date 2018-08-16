@@ -392,7 +392,7 @@ $ ./mvnw clean install -Dmaven.test.skip=true
 ---
 applications:
 - name: cloud-native-spring
-  host: cloud-native-spring
+  host: cloud-native-spring-<YOURNAME>
   memory: 1G
   instances: 1
   path: ./target/cloud-native-spring-0.0.1-SNAPSHOT.jar

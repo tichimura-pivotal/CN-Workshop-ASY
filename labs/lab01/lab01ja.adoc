@@ -118,13 +118,14 @@ public class CloudNativeSpringApplication {
 . ターミナルにてディレクトリを変更 *CN-Workshop-ASY/labs/lab01/cloud-native-spring*
 +
 ``
-$ cd /CN-Workshop-ASY/labs/lab01/cloud-native-spring
+$ cd ./CN-Workshop-ASY/labs/lab01/cloud-native-spring
 ``
 . スタンドアロンでのアプリケーションの実行
 +
 ``
 $ ./mvnw clean spring-boot:run
 ``
+NOTE: Windowsユーザの方は、mvnw.cmdを利用して下さい
 
 . サーバ(Tomcat)が起動(8080ポート)しているのを確認:
 +

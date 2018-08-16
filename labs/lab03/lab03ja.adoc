@@ -56,7 +56,7 @@ Property 'management.security.enabled' is Deprecated: A global security auto-con
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 +
 以下のエンドポイントの確認
@@ -215,7 +215,7 @@ _actuator_ を活用して、特定の環境におけるビルドとバージョ
 .  _cloud-native-spring_ アプリケーションを実行:
 +
 ``
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ``
 +
 . http://localhost:8080/actuator/info を閲覧。Git commitの情報が含まれるのがわかる
@@ -266,7 +266,7 @@ NOTE: もしSTSが上記application.propertiesにおいて、@文字でのエラ
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
 . 再度http://localhost:8080/actuator/infoを確認. ビルド情報が表示されるかチェック。
@@ -327,7 +327,7 @@ link:https://github.com/spring-projects/spring-boot/wiki/Spring-Boot-2.0-Migrati
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
 . http://localhost:8080/actuator/health を確認.
@@ -402,7 +402,7 @@ public class FlappingHealthIndicator implements HealthIndicator {
 +
 [source,bash]
 ---------------------------------------------------------------------
-$ mvn clean spring-boot:run
+$ ./mvnw clean spring-boot:run
 ---------------------------------------------------------------------
 
 . http://localhost:8080/actuator/health を確認して、出力が以下と似たような状態になるか確認 (かつランダムに変わることも）
@@ -551,7 +551,7 @@ $ ./mvnw clean package
 ---
 applications:
 - name: cloud-native-spring
-  host: cloud-native-spring
+  host: cloud-native-spring-<YOURNAME>
   memory: 1G
   instances: 1
   path: ./target/cloud-native-spring-0.0.1-SNAPSHOT-exec.jar
